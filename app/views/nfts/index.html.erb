@@ -1,0 +1,56 @@
+<div class="container py-4 mb-2 mb-sm-0 pb-sm-5">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Rank</th>
+        <th scope="col">
+          <%= link_to "Name", nfts_path(sort_by: "Name", sort: @sort) %>
+        </th>
+        <th scope="col">Floor Price</th>
+        <th scope="col">
+          <%= link_to "24h", nfts_path(sort_by: "variation", sort: @sort) %>
+        </th>
+        <th scope="col">
+          <%= link_to "Volume", nfts_path(sort_by: "volume_24h", sort: @sort) %>
+        </th>
+        <th scope="col">
+          <%= link_to "Sales", nfts_path(sort_by: "sales_24h", sort: @sort) %>
+        </th>
+        <th scope="col">
+          <%= link_to "Listed / Supply Ratio", nfts_path(sort_by: "listed_ratio", sort: @sort) %>
+        </th>
+        <th scope="col">
+          <%= link_to "Floor Cap", nfts_path(sort_by: "floor_cap", sort: @sort) %>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @nfts.each_with_index do |nft, idx| %>
+        <tr>
+          <td><%= get_rank(idx, @page) %></td>
+          <td>
+            <%= link_to nft_path(nft.nft_id), class: "nft-name" do %>
+              <%= image_tag logo_path(nft.slug), size: "50x50", class: "rounded-circle" %>
+              <span class="text-dark"><%= nft.name %></span>
+            <% end %>
+          </td>
+          <td>
+            <%= number_to_currency nft.floor_price_24h %>
+            <%= link_to nft.opensea_url, target: "_blank" do %>
+              <i class="ai-compass fs-lg me-2"></i>
+            <% end %>
+          </td>
+          <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
+          <td><%= number_to_currency nft.volume_24h %></td>
+          <td><%= nft.sales_24h %></td>
+          <td><%= listed_and_supply_radio(nft.total_supply, nft.listed_ratio) %></td>
+          <td><%= number_to_currency nft.floor_cap %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <div class="p-4">
+    <%= paginate @nfts %>
+  </div>
+</div>
