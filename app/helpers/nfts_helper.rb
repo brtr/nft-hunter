@@ -1,11 +1,17 @@
 module NftsHelper
-  def logo_path(slug)
-    "https://s3.amazonaws.com/cdn.nftpricefloor/projects/v1/#{slug}.png"
+  def logo_path(slug, logo)
+    if logo
+      logo
+    elsif slug
+      "https://s3.amazonaws.com/cdn.nftpricefloor/projects/v1/#{slug}.png"
+    else
+      "default.png"
+    end
   end
 
   def listed_and_supply_radio(supply, listed_ratio)
-    listed = supply * listed_ratio
-    "#{listed.to_i} / #{supply} (#{listed_ratio.round(2)}) %"
+    listed = supply * listed_ratio rescue 0
+    "#{listed.to_i} / #{supply} (#{listed_ratio.to_f.round(2)}) %"
   end
 
   def get_rank(idx, page)

@@ -3,15 +3,12 @@
     <div class="card" style="height: 160px">
       <div class="card-body row">
         <div class="logo col-4">
-          <%= image_tag logo_path(@nft.slug), width: "100px", class: "rounded-circle" %>
+          <%= image_tag logo_path(@nft.slug, @nft.logo), class: "big-logo rounded-circle" %>
         </div>
-        <div class="text-end col-7">
-          <h3><%= @nft.name %></h3>
-          <%= get_chain_name(@nft.chain_id) %>
-          <br />
+        <div class="text-end col-8">
+          <h4><%= @nft.name.humanize %></h4>
+          <h5><%= get_chain_name(@nft.chain_id) %></h5>
           <h5 class="text-info">Floor Cap: <%= number_to_currency @nft.floor_cap %></h5>
-          24H: 
-          <span class="text-<%= change_text_color(@nft.variation.to_f) %>"><%= "#{@nft.variation.to_f}%" %></span>
         </div>
       </div>
     </div>
@@ -19,8 +16,8 @@
   <div class="col-4 mb-5">
     <div class="card" style="height: 160px">
       <div class="card-body">
-        <div>
-          <h3 class="border-bottom pb-2">Floor Price <span class="float-end"><%= number_to_currency @nft.floor_price_24h %></span></h3>
+        <div class="mt-2">
+          <h5 class="border-bottom pb-2">Floor Price(24h) <span class="float-end"><%= number_to_currency @nft.floor_price_24h %>(<span class="text-<%= change_text_color(@nft.variation.to_f) %>"><%= "#{@nft.variation.to_f}%" %></span>)</span></h5>
           <h5 class="border-bottom pb-2">Volume(24h) <span class="float-end"><%= number_to_currency @nft.volume_24h %></span></h5>
           <h5>Sales(24h) <span class="float-end"><%= @nft.sales_24h %></span></h5>
         </div>

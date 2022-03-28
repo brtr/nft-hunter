@@ -15,11 +15,12 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.chain_id,
       n.name,
       n.slug,
+      n.logo,
       n.opensea_url,
       n.total_supply,
       n.floor_cap,
       n.listed_ratio,
-      n.variation.to_f,
+      ROUND(n.variation, 2) as variation,
       n2.sales as sales_24h,
       n2.floor_price as floor_price_24h,
       n2.volume as volume_24h
