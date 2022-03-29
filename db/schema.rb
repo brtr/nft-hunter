@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_03_28_073047) do
+ActiveRecord::Schema.define(version: 2022_03_29_052724) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,6 +40,22 @@ ActiveRecord::Schema.define(version: 2022_03_28_073047) do
     t.decimal "floor_cap"
     t.decimal "listed_ratio"
     t.decimal "variation"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "owner_nfts", force: :cascade do |t|
+    t.integer "owner_id"
+    t.integer "nft_id"
+    t.integer "amount"
+    t.string "token_ids"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["owner_id", "nft_id"], name: "index_owner_nfts_on_owner_id_and_nft_id"
+  end
+
+  create_table "owners", force: :cascade do |t|
+    t.string "address"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end

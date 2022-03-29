@@ -9,6 +9,7 @@ class NftsController < ApplicationController
   end
 
   def show
+    @owners = OwnerNft.where(nft_id: @nft.nft_id).includes(:owner).order(amount: :desc).page(params[:page]).per(15)
     @data = NftHistory::PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_price_data
   end
 

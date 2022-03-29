@@ -23,6 +23,16 @@ document.addEventListener('turbolinks:load', () => {
             borderColor: ['#129CFF'],
             backgroundColor: ['#129CFF'],
             yAxisID: 'y'
+          },
+          {
+            label: "Volume",
+            data: price_data.map(i => {
+              return i[0].volume
+            }),
+            tension: 0.4,
+            borderColor: ['#166a8f'],
+            backgroundColor: ['#166a8f'],
+            yAxisID: 'y1'
           }
         ],
       },

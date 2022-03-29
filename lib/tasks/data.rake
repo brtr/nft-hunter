@@ -74,10 +74,24 @@ namespace :data do
     puts "End at #{Time.now}"
   end
 
-  desc "Create nfts_view"
+  desc 'Create nfts_view'
   task generate_nfts_view: :environment do
     sql = ERB.new(File.read("app/data_views/nfts_view.sql")).result()
     Nft.connection.execute(sql)
     p "Create nfts_view success"
+  end
+
+  desc 'Fetch nft owners'
+  task fetch_nft_owners: :environment do
+    puts "Start at #{Time.now}"
+
+    Nft.where.not(address: nil).each do |nft|
+      next if nft.id == 6235
+      puts nft.name
+      nft.fetch_owners
+      sleep 1
+    end
+
+    puts "End at #{Time.now}"
   end
 end

@@ -43,4 +43,28 @@
 
     <%= render "line_chart" %>
   </div>
+  <div class="mt-5">
+    <% if @owners.any? %>
+      <h2>Owners List</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Address</th>
+            <th scope="col">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @owners.each do |o| %>
+            <tr>
+              <td><%= o.owner.address %></td>
+              <td><%= o.amount %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <div class="p-4">
+        <%= paginate @owners %>
+      </div>
+    <% end %>
+  </div>
 </div>
