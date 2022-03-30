@@ -16,6 +16,7 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.name,
       n.slug,
       n.logo,
+      n.address,
       n.opensea_url,
       n.total_supply,
       n.floor_cap,
