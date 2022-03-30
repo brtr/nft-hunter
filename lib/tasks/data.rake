@@ -13,6 +13,7 @@ namespace :data do
         slug = asset["slug"]
         puts slug
         nft = Nft.where(slug: slug, chain_id: 1).first
+        next if slug.blank? || nft.blank?
         nft.update(total_supply: asset["totalSupply"], listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"], variation: asset["variationUSD"], opensea_url: asset["url"])
         sales_data = asset["salesData"]
         nft.nft_histories.where(event_date: Date.yesterday).first_or_create(floor_price: asset["floorPriceUSD"], sales: sales_data["numberSales24h"], volume: sales_data["sales24hVolumeUSD"])

@@ -9,7 +9,8 @@ class NftsController < ApplicationController
   end
 
   def show
-    @owners = OwnerNft.where(nft_id: @nft.nft_id).includes(:owner).order(amount: :desc).page(params[:page]).per(15)
+    @total_owners = NftOwnerService.total_owners(@nft.nft_id).size
+    @owners_data = NftOwnerService.get_target_owners_ratio(@nft.nft_id)
     @data = NftHistory::PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_price_data
   end
 

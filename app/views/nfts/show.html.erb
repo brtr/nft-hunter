@@ -1,70 +1,62 @@
 <div class="container py-4 mb-2 mb-sm-0 pb-sm-5 row">
-  <div class="col-6 mb-5">
-    <div class="card" style="height: 160px">
-      <div class="card-body row">
-        <div class="logo col-4">
-          <%= image_tag logo_path(@nft.slug, @nft.logo), class: "big-logo rounded-circle" %>
-        </div>
-        <div class="text-end col-8">
-          <h4><%= @nft.name.humanize %></h4>
-          <h5><%= get_chain_name(@nft.chain_id) %></h5>
-          <h5 class="text-info">Floor Cap: <%= number_to_currency @nft.floor_cap %></h5>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-4 mb-5">
-    <div class="card" style="height: 160px">
-      <div class="card-body">
-        <div class="mt-2">
-          <h5 class="border-bottom pb-2">Floor Price(24h) <span class="float-end"><%= number_to_currency @nft.floor_price_24h %>(<span class="text-<%= change_text_color(@nft.variation.to_f) %>"><%= "#{@nft.variation.to_f}%" %></span>)</span></h5>
-          <h5 class="border-bottom pb-2">Volume(24h) <span class="float-end"><%= number_to_currency @nft.volume_24h %></span></h5>
-          <h5>Sales(24h) <span class="float-end"><%= @nft.sales_24h %></span></h5>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div id="chart">
-    <h2 class="mt-3">Floor Price Chart</h2>
-    <div class="text-right mt-5">
-      <%= form_tag nft_path, id: "period_targets", method: "GET" do %>
-        <div class="col-12">
-          <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-            <%= radio_button_tag :period, "week", params[:period] == "week", class: "btn-check", id: "btnradio1" %>
-            <label class="btn btn-outline-primary week" for="btnradio1">周</label>
-            <%= radio_button_tag :period, "month", params[:period] == "month", class: "btn-check", id: "btnradio2" %>
-            <label class="btn btn-outline-primary month" for="btnradio2">月</label>
-            <%= radio_button_tag :period, "year", params[:period] == "year", class: "btn-check", id: "btnradio3" %>
-            <label class="btn btn-outline-primary year" for="btnradio3">年</label>
+  <div class="col-7 mb-5">
+    <div class="mb-5">
+      <div class="card" style="height: 160px">
+        <div class="card-body row">
+          <div class="logo col-4">
+            <%= image_tag logo_path(@nft.slug, @nft.logo), class: "big-logo rounded-circle" %>
+          </div>
+          <div class="text-end col-8">
+            <h4><%= @nft.name.humanize %></h4>
+            <h5><%= get_chain_name(@nft.chain_id) %></h5>
+            <h5 class="text-info">Floor Cap: <%= number_to_currency @nft.floor_cap %></h5>
           </div>
         </div>
-      <% end %>
-    </div>
-
-    <%= render "line_chart" %>
-  </div>
-  <div class="mt-5">
-    <% if @owners.any? %>
-      <h2>Owners List</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Address</th>
-            <th scope="col">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @owners.each do |o| %>
-            <tr>
-              <td><%= o.owner.address %></td>
-              <td><%= o.amount %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-      <div class="p-4">
-        <%= paginate @owners %>
       </div>
-    <% end %>
+    </div>
+    <div class="mb-5">
+      <div class="card" style="height: 160px">
+        <div class="card-body">
+          <div class="mt-2">
+            <h5 class="border-bottom pb-2">Floor Price(24h) <span class="float-end"><%= number_to_currency @nft.floor_price_24h %>(<span class="text-<%= change_text_color(@nft.variation.to_f) %>"><%= "#{@nft.variation.to_f}%" %></span>)</span></h5>
+            <h5 class="border-bottom pb-2">Volume(24h) <span class="float-end"><%= number_to_currency @nft.volume_24h %></span></h5>
+            <h5>Sales(24h) <span class="float-end"><%= @nft.sales_24h %></span></h5>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="chart">
+      <h2 class="mt-3">Floor Price Chart</h2>
+      <div class="text-right mt-5">
+        <%= form_tag nft_path, id: "period_targets", method: "GET" do %>
+          <div class="col-12">
+            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+              <%= radio_button_tag :period, "week", params[:period] == "week", class: "btn-check", id: "btnradio1" %>
+              <label class="btn btn-outline-primary week" for="btnradio1">周</label>
+              <%= radio_button_tag :period, "month", params[:period] == "month", class: "btn-check", id: "btnradio2" %>
+              <label class="btn btn-outline-primary month" for="btnradio2">月</label>
+              <%= radio_button_tag :period, "year", params[:period] == "year", class: "btn-check", id: "btnradio3" %>
+              <label class="btn btn-outline-primary year" for="btnradio3">年</label>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%= render "line_chart" %>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="mb-5">
+      <div class="card">
+        <div class="card-body">
+          <div class="mt-2">
+            <h3 class="border-bottom">Total Owners <span class="float-end"><%= @total_owners %></span></h3>
+            <% @owners_data.each do |d| %>
+              <h5 class="border-bottom pb-2"><%= d[:nft] %><span class="float-end"><%= d[:owners_count] %>(<span class="text-primary"><%= "#{d[:owners_ratio]}%" %></span>)</span></h5>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
