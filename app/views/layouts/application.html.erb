@@ -33,11 +33,31 @@
                   <li class="nav-item">
                     <%= link_to "Home", root_path, class: "nav-link #{@page_index == 0 ? 'active' : ''}" %>
                   </li>
+                  <li class="nav-item dropdown">
+                    <%= link_to "Rank", '#', class: "nav-link dropdown-toggle #{@page_index.in?([1, 2]) ? 'active' : ''}", data: {"bs-toggle": "dropdown"} %>
+                    <ul class="dropdown-menu">
+                      <li class="dropdown">
+                        <%= link_to "Purchase Top 10", purchase_rank_nfts_path, class: "dropdown-item #{@page_index == 1 ? 'active' : ''}" %>
+                      </li>
+                      <li class="dropdown">
+                        <%= link_to "Holding Top 10", holding_rank_nfts_path, class: "dropdown-item #{@page_index == 2 ? 'active' : ''}" %>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="nav-item dropdown">
+                    <%= link_to "NFT", '#', class: "nav-link dropdown-toggle #{@page_index.in?([3]) ? 'active' : ''}", data: {"bs-toggle": "dropdown"} %>
+                    <ul class="dropdown-menu">
+                      <li class="dropdown">
+                        <%= link_to "Add NFT", new_nft_path, class: "dropdown-item #{@page_index == 3 ? 'active' : ''}" %>
+                      </li>
+                    </ul>
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
         </header>
+        <%= render "layouts/notices" %>
         <%= yield %>
       </main>
     </div>

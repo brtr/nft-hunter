@@ -1,0 +1,40 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Rank</th>
+      <th scope="col">Name</th>
+      <th scope="col">Count</th>
+      <th scope="col">Floor Price</th>
+      <th scope="col">24h</th>
+      <th scope="col">Volume</th>
+      <th scope="col">Sales</th>
+      <th scope="col">Listed / Supply Ratio</th>
+      <th scope="col">Floor Cap</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @nfts.each_with_index do |nft, idx| %>
+      <tr>
+        <td><%= idx + 1 %></td>
+        <td>
+          <%= link_to nft_path(nft.nft_id), class: "nft-name" do %>
+            <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
+            <span class="text-dark"><%= nft.name.humanize %></span>
+          <% end %>
+        </td>
+        <td><%= @data[nft.nft_id.to_s] if @data %></td>
+        <td>
+          <%= number_to_currency nft.floor_price_24h %>
+          <%= link_to nft.opensea_url, target: "_blank" do %>
+            <i class="ai-compass fs-lg me-2"></i>
+          <% end if nft.opensea_url %>
+        </td>
+        <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
+        <td><%= number_to_currency nft.volume_24h %></td>
+        <td><%= nft.sales_24h %></td>
+        <td><%= listed_and_supply_radio(nft.total_supply, nft.listed_ratio) %></td>
+        <td><%= number_to_currency nft.floor_cap %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

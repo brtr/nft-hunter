@@ -25,11 +25,11 @@
       </tr>
     </thead>
     <tbody>
-      <% @nfts.each_with_index do |nft, idx| %>
+       <% @nfts.each_with_index do |nft, idx| %>
         <tr>
-          <td><%= get_rank(idx, @page) %></td>
+          <td><%= idx + 1 %></td>
           <td>
-            <%= link_to nft_path(nft.nft_id), class: "nft-name" do %>
+            <%= link_to nft_path(nft.nft_id.to_s), class: "nft-name" do %>
               <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
               <span class="text-dark"><%= nft.name.humanize %></span>
             <% end %>

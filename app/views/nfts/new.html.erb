@@ -1,0 +1,23 @@
+<div class="container py-4 mb-2 mb-sm-0 pb-sm-5">
+  <div class="row" style="width: 50%; margin: 0 auto;">
+    <h3>Add NFT</h3>
+    <%= form_for @nft do |f| %>
+      <div class="mb-3 pb-1 col-12">
+        <%= f.label :name, class: "form-label px-0" %>
+        <%= f.text_field :name, class: "form-control" %>
+      </div>
+      <div class="mb-3 pb-1 col-12">
+        <%= f.label :slug, class: "form-label px-0" %>
+        <%= f.text_field :slug, class: "form-control" %>
+      </div>
+      <div class="mb-3 pb-1 col-12">
+        <%= f.label :address, class: "form-label px-0" %>
+        <%= f.text_field :address, class: "form-control", required: true %>
+      </div>
+      <div class="mb-3 pb-1">
+        <%= f.submit "Submit", disable_with: "Submitting...", class: 'btn btn-primary mt-3 mt-sm-0' %>
+        <%= link_to "Cancel", root_path, class: 'btn btn-default' %>
+      </div>
+    <% end %>
+  </div>
+</div>

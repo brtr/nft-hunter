@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_03_30_062126) do
+ActiveRecord::Schema.define(version: 2022_03_31_024546) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,38 +27,3 @@ ActiveRecord::Schema.define(version: 2022_03_30_062126) do
     t.index ["nft_id"], name: "index_nft_histories_on_nft_id"
   end
 
-  create_table "nfts", force: :cascade do |t|
-    t.integer "chain_id"
-    t.string "name"
-    t.string "symbol"
-    t.string "slug"
-    t.string "website"
-    t.string "opensea_url"
-    t.string "address"
-    t.string "logo"
-    t.decimal "total_supply"
-    t.decimal "floor_cap"
-    t.decimal "listed_ratio"
-    t.decimal "variation"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.boolean "is_marked", default: false
-  end
-
-  create_table "owner_nfts", force: :cascade do |t|
-    t.integer "owner_id"
-    t.integer "nft_id"
-    t.integer "amount"
-    t.string "token_ids"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["owner_id", "nft_id"], name: "index_owner_nfts_on_owner_id_and_nft_id"
-  end
-
-  create_table "owners", force: :cascade do |t|
-    t.string "address"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
-end

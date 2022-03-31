@@ -1,7 +1,7 @@
 class NftsController < ApplicationController
   before_action :get_nft, except: :index
   def index
-    @page_index = 1
+    @page_index = 0
     @page = params[:page].to_i || 1
     sort_by = params[:sort_by] || "floor_cap" 
     @sort = params[:sort] == "desc" ? "asc" : "desc"
@@ -16,6 +16,40 @@ class NftsController < ApplicationController
     @data = NftHistory::PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_price_data
   end
 
+  def new
+    @nft = Nft.new
+  end
+
+  def create
+    nft = Nft.new(nft_params)
+    if nft.address.match(/^0x[a-fA-F0-9]{40}$/)
+      unless nft.fetch_pricefloor_nft
+        nft.fetch_covalent_histories
+      end
+
+      NftHistoryService.generate_nfts_view
+
+      redirect_to nfts_path, notice: "Add NFT successful!"
+    else
+      flash[:alert] = "Invalid address!"
+      @nft = Nft.new
+
+      render :new
+    end
+  end
+
+  def purchase_rank
+    @page_index = 1
+    @data = NftPurchaseHistory.where("purchase_date >= ? and purchase_date <= ?", Date.yesterday, Date.today).group(:nft_id).count.map{|k, v| [k.to_s, v]}.sort_by{|k, v| v}.reverse.first(10).to_h
+    @nfts = NftsView.find(@data.keys)
+  end
+
+  def holding_rank
+    @page_index = 2
+    @data = NftOwnerService.get_target_owners_rank
+    @nfts = NftsView.find(@data.keys)
+  end
+
   private
   def get_nft
     @nft = NftsView.find_by nft_id: params[:id]
@@ -27,5 +61,9 @@ class NftsController < ApplicationController
     when "year" then Date.today.last_year.to_date
     else 7.days.ago.to_date
     end
+  end
+
+  def nft_params
+    params.require(:nft).permit(:name, :slug, :address)
   end
 end

@@ -4,6 +4,7 @@ class Nft < ApplicationRecord
   has_many :nft_histories
   has_many :owner_nfts
   has_many :owners, through: :owner_nfts
+  has_many :nft_purchase_histories
 
   def fetch_pricefloor_histories
     response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all").read rescue nil
@@ -25,6 +26,28 @@ class Nft < ApplicationRecord
     end
   end
 
+  def fetch_covalent_histories
+    end_date = Date.today.strftime("%Y-%m-%d")
+    start_date = (Date.today - 1.year).strftime("%Y-%m-%d")
+    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?from=#{start_date}&to=#{end_date}&key=ckey_docs").read rescue nil
+    if response
+      data = JSON.parse(response)
+      items = data["data"]["items"]
+      item = items.first
+      self.update(chain_id: 1, symbol: item["collection_ticker_symbol"], logo: item["first_nft_image"])
+      if items.any?
+        items.each do |item|
+          h = nft_histories.where(event_date: item["opening_date"]).first_or_create
+          h.update(floor_price: item["floor_price_quote_7d"], volume: item["volume_quote_day"], sales: item["unique_token_ids_sold_count_day"])
+        end
+      else
+        puts "Fetch covalent histories Error: #{name} does not have history data!"
+      end
+    else
+      puts "Fetch covalent histories Error: #{name} can't fetch histories!"
+    end
+  end
+
   def fetch_owners(cursor=nil)
     return unless address
     url = "https://deep-index.moralis.io/api/v2/nft/#{address}/owners?chain=eth&format=decimal"
@@ -43,6 +66,21 @@ class Nft < ApplicationRecord
       fetch_owners(data["cursor"]) if data["cursor"].present?
     else
       puts "Fetch moralis Error: #{name} can't fetch owners"
+    end
+  end
+
+  def fetch_pricefloor_nft
+    result = NftHistoryService.get_pricefloor_data rescue []
+    if result.any?
+      asset = result.select{|r| r["slug"] == slug}.first
+      if asset
+        self.update(total_supply: asset["totalSupply"], listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"], variation: asset["variationUSD"], opensea_url: asset["url"])
+        self.fetch_pricefloor_histories
+      else
+        return false
+      end
+    else
+      return false
     end
   end
 end

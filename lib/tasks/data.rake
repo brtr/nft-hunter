@@ -6,21 +6,7 @@ namespace :data do
   task fetch_pricefloor_nfts: :environment do
     puts "Start at #{Time.now}"
 
-    response = URI.open("https://api-bff.nftpricefloor.com/nfts").read
-    result = JSON.parse(response)
-    if result.any?
-      result.each do |asset|
-        slug = asset["slug"]
-        puts slug
-        nft = Nft.where(slug: slug, chain_id: 1).first
-        next if slug.blank? || nft.blank?
-        nft.update(total_supply: asset["totalSupply"], listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"], variation: asset["variationUSD"], opensea_url: asset["url"])
-        sales_data = asset["salesData"]
-        nft.nft_histories.where(event_date: Date.yesterday).first_or_create(floor_price: asset["floorPriceUSD"], sales: sales_data["numberSales24h"], volume: sales_data["sales24hVolumeUSD"])
-      end
-    else
-      puts "Fetch NFTPriceFloor Error: No nfts!"
-    end
+    NftHistoryService.fetch_pricefloor_nfts
 
     puts "End at #{Time.now}"
   end
@@ -40,8 +26,7 @@ namespace :data do
 
   desc 'Create nfts_view'
   task generate_nfts_view: :environment do
-    sql = ERB.new(File.read("app/data_views/nfts_view.sql")).result()
-    Nft.connection.execute(sql)
+    NftHistoryService.generate_nfts_view
     p "Create nfts_view success"
   end
 
@@ -56,5 +41,26 @@ namespace :data do
     end
 
     puts "End at #{Time.now}"
+  end
+
+  desc 'Fetch target nft owners purchase data'
+  task :fetch_target_nft_owners_data, [:duration] => [:environment] do |task, args|
+    target_owners = OwnerNft.includes(:owner).where(nft_id: Nft.where(is_marked: true).pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
+    Nft.all.each do |nft|
+      response = NftOwnerService.fetch_trades(nft.address, args[:duration])
+
+      if response
+        data = JSON.parse(response)
+        data["result"].each do |r|
+          owners_address = target_owners.keys
+          address = r["buyer_address"]
+
+          if owners_address.include?(address)
+            h = nft.nft_purchase_histories.where(owner_id: target_owners[address], purchase_date: r["block_timestamp"]).first_or_create
+            h.update(amount: r["token_ids"].count)
+          end
+        end
+      end
+    end
   end
 end
