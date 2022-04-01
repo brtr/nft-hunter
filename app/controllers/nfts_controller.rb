@@ -40,7 +40,7 @@ class NftsController < ApplicationController
 
   def purchase_rank
     @page_index = 1
-    @data = NftPurchaseHistory.where("purchase_date >= ? and purchase_date <= ?", Date.yesterday, Date.today).group(:nft_id).count.map{|k, v| [k.to_s, v]}.sort_by{|k, v| v}.reverse.first(10).to_h
+    @data = NftPurchaseHistory.without_target_nfts.last_24h.group(:nft_id).count.map{|k, v| [k.to_s, v]}.sort_by{|k, v| v}.reverse.first(10).to_h
     @nfts = NftsView.find(@data.keys)
   end
 

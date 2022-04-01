@@ -65,8 +65,10 @@ class NftOwnerService
     def get_target_owners_rank
       result = JSON.parse($redis.get("holding_rank")) rescue {}
       if result.blank?
-        owner_ids = OwnerNft.where(nft_id: target_nfts.pluck(:id)).pluck(:owner_id).uniq
+        target_ids = target_nfts.pluck(:id)
+        owner_ids = OwnerNft.where(nft_id: target_ids).pluck(:owner_id).uniq
         Nft.includes(:owner_nfts).each do |nft|
+          next if target_ids.include?(nft.id)
           owners_count = nft.owner_nfts.where(owner_id: owner_ids).sum(:amount)
 
           result.merge!(
