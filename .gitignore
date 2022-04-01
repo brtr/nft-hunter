@@ -39,6 +39,7 @@ package-lock.json
 
 # Ignore application configuration
 /config/application.yml
+/config/sidekiq.yml
 
 .ruby-version
 .browserslistrc
