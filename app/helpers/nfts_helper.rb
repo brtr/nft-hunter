@@ -11,7 +11,7 @@ module NftsHelper
 
   def listed_and_supply_radio(supply, listed_ratio)
     listed = supply * listed_ratio rescue 0
-    "#{listed.to_i} / #{supply} (#{listed_ratio.to_f.round(2)}) %"
+    "#{listed.to_i} / #{supply.to_i} (#{listed_ratio.to_f.round(2)}) %"
   end
 
   def get_rank(idx, page)
@@ -47,17 +47,19 @@ module NftsHelper
     end
   end
 
-  def get_count_ratio(data, nft)
-    count = data[nft.nft_id.to_s]
+  def get_count_ratio(nft)
+    count = nft.tokens_count
     ratio = (count.to_f / nft.total_supply)
     "#{count} (#{(ratio * 100).round(2)}%)"
   end
 
-  def get_owners_count(nft, d_type="holding")
-    if d_type == "purchase"
-      NftPurchaseHistory.without_target_nfts.last_24h.where(nft_id: nft.nft_id).pluck(:owner_id).uniq.size
-    else
-      NftOwnerService.get_target_owners_ratio(nft.nft_id).sum{|r| r[:owners_count]}
-    end
+  def get_purchase_data(nft, data)
+    owners_count = NftPurchaseHistory.without_target_nfts.last_24h.where(nft_id: nft.nft_id).pluck(:owner_id).uniq.size
+    tokens_count = data[nft.nft_id]
+    ratio = (tokens_count.to_f / nft.total_supply)
+    {
+      token_ratio: "#{tokens_count} (#{(ratio * 100).round(2)}%)",
+      owners_count: owners_count
+    }
   end
 end

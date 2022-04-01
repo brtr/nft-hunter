@@ -40,14 +40,14 @@ class NftsController < ApplicationController
 
   def purchase_rank
     @page_index = 1
-    @data = NftPurchaseHistory.without_target_nfts.last_24h.group(:nft_id).count.map{|k, v| [k.to_s, v]}.sort_by{|k, v| v}.reverse.first(10).to_h
+    @data = NftPurchaseHistory.without_target_nfts.last_24h.group(:nft_id).count.map{|k, v| [k, v]}.sort_by{|k, v| v}.reverse.first(10).to_h
     @nfts = NftsView.find(@data.keys)
   end
 
   def holding_rank
     @page_index = 2
-    @data = NftOwnerService.get_target_owners_rank
-    @nfts = NftsView.find(@data.keys)
+    snap_shot = HoldingRankSnapShot.last
+    @nfts = snap_shot.holding_rank_snap_shot_views
   end
 
   private

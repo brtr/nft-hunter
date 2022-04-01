@@ -63,25 +63,57 @@ class NftOwnerService
     end
 
     def get_target_owners_rank
-      result = JSON.parse($redis.get("holding_rank")) rescue {}
+      result = []
       if result.blank?
         target_ids = target_nfts.pluck(:id)
         owner_ids = OwnerNft.where(nft_id: target_ids).pluck(:owner_id).uniq
-        Nft.includes(:owner_nfts).each do |nft|
-          next if target_ids.include?(nft.id)
-          owners_count = nft.owner_nfts.where(owner_id: owner_ids).sum(:amount)
+        NftsView.includes(:owner_nfts).each do |nft|
+          next if target_ids.include?(nft.nft_id)
+          tokens_count = nft.owner_nfts.where(owner_id: owner_ids).sum(:amount)
+          owners_count = get_target_owners_ratio(nft.nft_id).sum{|r| r[:owners_count]}
 
-          result.merge!(
+          result.push(
             {
-              nft.id => owners_count
+              nft_id: nft.nft_id,
+              nft: nft,
+              tokens_count: tokens_count,
+              owners_count: owners_count
             }
           )
         end
-
-        $redis.set("holding_rank", result.to_json, ex: 23.hours)
       end
 
-      result.sort_by{|k, v| v}.reverse.first(10).to_h
+      result.sort_by{|r| r[:tokens_count]}.reverse.first(10)
+    end
+
+    def fetch_target_nft_owners_data(duration)
+      target_owners = OwnerNft.includes(:owner).where(nft_id: target_nfts.pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
+      Nft.all.each do |nft|
+        response = fetch_trades(nft.address, duration)
+
+        if response
+          data = JSON.parse(response) rescue nil
+          if data
+            data["result"].each do |r|
+              owners_address = target_owners.keys
+              address = r["buyer_address"]
+
+              if owners_address.include?(address)
+                h = nft.nft_purchase_histories.where(owner_id: target_owners[address], purchase_date: r["block_timestamp"]).first_or_create
+                h.update(amount: r["token_ids"].count)
+              end
+            end
+          end
+        end
+      end
+    end
+
+    def fetch_owners
+      Nft.where.not(address: nil).each do |nft|
+        puts nft.name
+        nft.fetch_owners
+        sleep 1
+      end
     end
   end
 end

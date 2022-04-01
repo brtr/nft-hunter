@@ -5,4 +5,6 @@ Rails.application.routes.draw do
     get :purchase_rank, on: :collection
     get :holding_rank, on: :collection
   end
+
+  resources :holding_rank_snap_shots, only: [:index, :show]
 end

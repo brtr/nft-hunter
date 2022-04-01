@@ -23,8 +23,8 @@
             <span class="text-dark"><%= nft.name.humanize %></span>
           <% end %>
         </td>
-        <td><%= get_count_ratio(@data, nft) if @data %></td>
-        <td><%= get_owners_count(nft, d_type) %></td>
+        <td><%= get_count_ratio(nft) %></td>
+        <td><%= nft.owners_count %></td>
         <td>
           <%= number_to_currency nft.floor_price_24h %>
           <%= link_to nft.opensea_url, target: "_blank" do %>
