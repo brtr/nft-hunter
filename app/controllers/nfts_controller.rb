@@ -52,7 +52,7 @@ class NftsController < ApplicationController
 
   private
   def get_nft
-    @nft = NftsView.find_by nft_id: params[:id]
+    @nft = NftsView.find_by slug: params[:id]
   end
 
   def period_date

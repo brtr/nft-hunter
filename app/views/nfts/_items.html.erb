@@ -18,7 +18,7 @@
       <tr>
         <td><%= idx + 1 %></td>
         <td>
-          <%= link_to nft_path(nft.nft_id), class: "nft-name" do %>
+          <%= link_to nft_path(nft.slug), class: "nft-name" do %>
             <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
             <span class="text-dark"><%= nft.name.humanize %></span>
           <% end %>

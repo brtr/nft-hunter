@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   root "nfts#index"
 
   mount Sidekiq::Web => "/sidekiq"
+  mount API::Root => '/'
 
   resources :nfts, only: [:index, :new, :create, :show] do
     get :purchase_rank, on: :collection
