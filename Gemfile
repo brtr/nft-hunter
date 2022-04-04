@@ -24,6 +24,7 @@ source "https://gems.contribsys.com/" do
 end
 
 gem "sidekiq-scheduler"
+gem "sidekiq-worker-killer"
 gem 'grape'
 gem 'rack-cors'
 

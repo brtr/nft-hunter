@@ -7,7 +7,7 @@ class Nft < ApplicationRecord
   has_many :nft_purchase_histories
 
   def fetch_pricefloor_histories
-    response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all").read rescue nil
+    response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all", {read_timeout: 10}).read rescue nil
     if response
       data = JSON.parse(response)
       dates = data["dates"]
@@ -29,7 +29,7 @@ class Nft < ApplicationRecord
   def fetch_covalent_histories
     end_date = Date.today.strftime("%Y-%m-%d")
     start_date = (Date.today - 1.year).strftime("%Y-%m-%d")
-    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?from=#{start_date}&to=#{end_date}&key=ckey_docs").read rescue nil
+    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?from=#{start_date}&to=#{end_date}&key=ckey_docs", {read_timeout: 10}).read rescue nil
     if response
       data = JSON.parse(response)
       items = data["data"]["items"]
@@ -52,7 +52,7 @@ class Nft < ApplicationRecord
     return unless address
     url = "https://deep-index.moralis.io/api/v2/nft/#{address}/owners?chain=eth&format=decimal"
     url += "&cursor=#{cursor}" if cursor
-    response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read rescue nil
+    response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 10}).read rescue nil
     if response
       data = JSON.parse(response)
       result = data["result"].group_by{|x| x["owner_of"]}.inject({}){|sum, x| sum.merge({x[0] => x[1].map{|y| y["token_id"]}})}

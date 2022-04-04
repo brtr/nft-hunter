@@ -31,7 +31,7 @@ class NftOwnerService
       to_date = Date.today
       from_date = to_date - duration.to_i.days
       url = "https://deep-index.moralis.io/api/v2/nft/#{address}/trades?chain=eth&marketplace=opensea&format=decimal&from_date=#{from_date}&to_date=#{to_date}"
-      URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read rescue nil
+      URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 10}).read rescue nil
     end
 
     def get_target_owners_trades(address, duration)
@@ -112,7 +112,7 @@ class NftOwnerService
       Nft.where.not(address: nil).each do |nft|
         puts nft.name
         nft.fetch_owners
-        sleep 1
+        sleep 3
       end
     end
   end

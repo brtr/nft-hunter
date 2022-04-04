@@ -1,5 +1,6 @@
 require 'sidekiq'
 require "sidekiq/pro/web"
+require 'sidekiq/worker_killer'
 
 shared_redis_config = {
   url: ENV["SIDEKIQ_REDIS_URL"] || "redis://localhost:6379/0",
@@ -19,6 +20,11 @@ Sidekiq.configure_server do |config|
     Sidekiq.options.merge! new_config
     ActiveRecord::Base.clear_active_connections!
   end
+
+  config.server_middleware do |chain|
+    chain.add Sidekiq::WorkerKiller, max_rss: 480
+  end
+
 end
 
 Sidekiq.configure_client do |config|
