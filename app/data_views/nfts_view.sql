@@ -1,14 +1,41 @@
 DROP MATERIALIZED VIEW IF EXISTS nfts_view;
 CREATE MATERIALIZED VIEW nfts_view AS
-    WITH histories_24h AS (
+    WITH histories_today AS (
       SELECT 
         nft_id, 
         event_date, 
         floor_price,
+        eth_floor_price,
         volume,
-        sales
+        eth_volume,
+        sales,
+        eth_volume_rank
       FROM nft_histories
       WHERE event_date = CURRENT_DATE - interval '1 day'
+    ), histories_24h AS (
+      SELECT
+        nft_id,
+        event_date,
+        floor_price,
+        eth_floor_price,
+        volume,
+        eth_volume,
+        sales,
+        eth_volume_rank
+      FROM nft_histories
+      WHERE event_date = CURRENT_DATE - interval '2 day'
+    ), histories_3d AS (
+      SELECT
+        nft_id,
+        event_date,
+        floor_price,
+        eth_floor_price,
+        volume,
+        eth_volume,
+        sales,
+        eth_volume_rank
+      FROM nft_histories
+      WHERE event_date = CURRENT_DATE - interval '3 day'
     ), results AS (
       SELECT 
       n.id::INTEGER as nft_id,
@@ -20,13 +47,21 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.opensea_url,
       n.total_supply,
       n.floor_cap,
+      n.eth_floor_cap,
       n.listed_ratio,
       ROUND(n.variation, 2) as variation,
-      n2.sales as sales_24h,
-      n2.floor_price as floor_price_24h,
-      n2.volume as volume_24h
+      h1.sales as sales_24h,
+      h1.floor_price as floor_price_24h,
+      h1.eth_floor_price as eth_floor_price_24h,
+      h1.volume as volume_24h,
+      h1.eth_volume as eth_volume_24h,
+      h1.eth_volume_rank as eth_volume_rank,
+      COALESCE((case when h2.eth_volume_rank = 0 then h1.eth_volume_rank else h1.eth_volume_rank - h2.eth_volume_rank end ), 0) as volume_rank_24h,
+      COALESCE((case when h3.eth_volume_rank = 0 then h1.eth_volume_rank else h1.eth_volume_rank - h3.eth_volume_rank end ), 0) as volume_rank_3d
       FROM nfts as n
-      LEFT JOIN histories_24h as n2 on n2.nft_id = n.id
+      LEFT JOIN histories_today as h1 on h1.nft_id = n.id
+      LEFT JOIN histories_24h as h2 on h2.nft_id = n.id
+      LEFT JOIN histories_3d as h3 on h3.nft_id = n.id
     )
     SELECT * FROM results;
 

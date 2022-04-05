@@ -1,0 +1,77 @@
+<div class="mt-3">
+  <canvas id="purchaseChart" style="height: 300px; width: 100%" data-data="<%= @purchase_data.to_json %>" ></canvas>
+</div>
+
+<script>
+document.addEventListener('turbolinks:load', () => {
+  const all_colors = [
+    'rgba(255, 99, 132, 1)',
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 206, 86, 1)',
+    'rgba(255, 159, 64, 1)',
+  ];
+
+  const get_color = function() {
+    num = Math.floor(Math.random() * all_colors.length);
+    return all_colors[num]
+  }
+
+  var canvas = document.getElementById('purchaseChart');
+  if(canvas){
+    const ctx = canvas.getContext('2d');
+    const chart_data = JSON.parse(ctx.canvas.dataset.data)
+    const labels = chart_data.labels
+    const purchase_data = Object.values(chart_data.data)
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: Object.keys(chart_data.data),
+        datasets: labels.map(function(a) {
+          return {
+              label: a,
+              data: purchase_data.map(d => {
+                const count = d.map(x => {
+                  return x[a] > 0 ? x[a] : 0
+                });
+
+                return count[0];
+              }),
+              tension: 0.4,
+              backgroundColor: [get_color()],
+              borderColor: [get_color()]
+        }})
+      },
+      options: {
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            }
+          },
+          y: {
+            position: 'left',
+            ticks: {
+              maxTicksLimit: 5
+            },
+          }
+        },
+        responsive: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return ''
+              },
+              footer: function(context) {
+                data = context[0];
+
+                return `${data.dataset.label}: ${data.formattedValue}`
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+})
+</script>

@@ -5,9 +5,10 @@ class Nft < ApplicationRecord
   has_many :owner_nfts
   has_many :owners, through: :owner_nfts
   has_many :nft_purchase_histories
+  has_many :target_nft_owner_histories
 
   def fetch_pricefloor_histories
-    response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all", {read_timeout: 10}).read rescue nil
+    response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all", {read_timeout: 20}).read rescue nil
     if response
       data = JSON.parse(response)
       dates = data["dates"]
@@ -16,7 +17,8 @@ class Nft < ApplicationRecord
           date = DateTime.parse el
           next unless date == date.at_beginning_of_day
           h = nft_histories.where(event_date: date).first_or_create
-          h.update(floor_price: data["dataPriceFloorUSD"][idx], volume: data["dataVolumeUSD"][idx], sales: data["sales"][idx])
+          h.update(floor_price: data["dataPriceFloorUSD"][idx], eth_floor_price: data["dataPriceFloorETH"][idx], sales: data["sales"][idx],
+                  volume: data["dataVolumeUSD"][idx], eth_volume: data["dataVolumeETH"][idx])
         end
       else
         puts "Fetch price floor histories Error: #{name} does not have history data!"
@@ -29,7 +31,7 @@ class Nft < ApplicationRecord
   def fetch_covalent_histories
     end_date = Date.today.strftime("%Y-%m-%d")
     start_date = (Date.today - 1.year).strftime("%Y-%m-%d")
-    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?from=#{start_date}&to=#{end_date}&key=ckey_docs", {read_timeout: 10}).read rescue nil
+    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?from=#{start_date}&to=#{end_date}&key=ckey_docs", {read_timeout: 20}).read rescue nil
     if response
       data = JSON.parse(response)
       items = data["data"]["items"]
@@ -52,17 +54,18 @@ class Nft < ApplicationRecord
     return unless address
     url = "https://deep-index.moralis.io/api/v2/nft/#{address}/owners?chain=eth&format=decimal"
     url += "&cursor=#{cursor}" if cursor
-    response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 10}).read rescue nil
+    response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 20}).read rescue nil
     if response
       data = JSON.parse(response)
       result = data["result"].group_by{|x| x["owner_of"]}.inject({}){|sum, x| sum.merge({x[0] => x[1].map{|y| y["token_id"]}})}
       puts "#{name} has #{result.count} owners"
       result.each do |address, token_ids|
         owner = Owner.where(address: address).first_or_create
-        owner_nft = owner.owner_nfts.where(nft_id: self.id).first_or_create
+        owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: Date.yesterday).first_or_create
         owner_nft.update(amount: token_ids.count, token_ids: token_ids)
       end
 
+      sleep 3
       fetch_owners(data["cursor"]) if data["cursor"].present?
     else
       puts "Fetch moralis Error: #{name} can't fetch owners"
@@ -74,7 +77,8 @@ class Nft < ApplicationRecord
     if result.any?
       asset = result.select{|r| r["slug"] == slug}.first
       if asset
-        self.update(total_supply: asset["totalSupply"], listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"], variation: asset["variationUSD"], opensea_url: asset["url"])
+        self.update(total_supply: asset["totalSupply"], listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"],
+          variation: asset["variationUSD"], opensea_url: asset["url"], eth_floor_cap: asset["floorCapETH"])
         self.fetch_pricefloor_histories
       else
         return false

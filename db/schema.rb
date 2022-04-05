@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_01_043603) do
+ActiveRecord::Schema.define(version: 2022_04_05_070801) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -55,6 +55,9 @@ ActiveRecord::Schema.define(version: 2022_04_01_043603) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.decimal "floor_price_7d"
+    t.integer "eth_volume_rank"
+    t.decimal "eth_floor_price"
+    t.decimal "eth_volume"
     t.index ["nft_id"], name: "index_nft_histories_on_nft_id"
   end
 
@@ -84,6 +87,7 @@ ActiveRecord::Schema.define(version: 2022_04_01_043603) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "is_marked", default: false
+    t.decimal "eth_floor_cap"
   end
 
   create_table "owner_nfts", force: :cascade do |t|
@@ -93,6 +97,8 @@ ActiveRecord::Schema.define(version: 2022_04_01_043603) do
     t.string "token_ids"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.date "event_date"
+    t.index ["nft_id", "event_date"], name: "index_owner_nfts_on_nft_id_and_event_date"
     t.index ["owner_id", "nft_id"], name: "index_owner_nfts_on_owner_id_and_nft_id"
   end
 
@@ -100,6 +106,17 @@ ActiveRecord::Schema.define(version: 2022_04_01_043603) do
     t.string "address"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "target_nft_owner_histories", force: :cascade do |t|
+    t.integer "nft_id"
+    t.integer "n_type"
+    t.string "data"
+    t.date "event_date"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["nft_id", "event_date", "n_type"], name: "index_target_nft_owner_histories_on_nft_id_event_date_and_type", unique: true
+    t.index ["nft_id"], name: "index_target_nft_owner_histories_on_nft_id"
   end
 
 end

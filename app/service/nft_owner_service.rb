@@ -2,25 +2,26 @@ require 'open-uri'
 
 class NftOwnerService
   class << self
-    def get_target_owners_ratio(nft_id)
+    def get_target_owners_ratio(nft_id, date=Date.yesterday)
       owners = total_owners(nft_id)
 
-      result = []
+      result = {total_count: owners.size, data: {}}
       target_nfts.each do |nft|
-        owner_ids = OwnerNft.where(nft_id: nft.id).pluck(:owner_id)
+        owner_ids = OwnerNft.where(nft_id: nft.id, event_date: date).pluck(:owner_id)
         target_owner_ids = owners.select{|o| owner_ids.include?(o)}
         ratio = owners.count == 0 ? 0 : (target_owner_ids.count.to_f / owners.count.to_f).round(2)
 
-        result.push(
+        result[:data].merge!(
           {
-            nft: nft.name,
-            owners_count: target_owner_ids.count,
-            owners_ratio: (ratio * 100).round(2)
+            nft.name => {
+              owners_count: target_owner_ids.count,
+              owners_ratio: (ratio * 100).round(2)
+            }
           }
         )
       end
 
-      result
+      TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "holding").first_or_create(data: result)
     end
 
     def total_owners(nft_id)
@@ -34,28 +35,20 @@ class NftOwnerService
       URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 10}).read rescue nil
     end
 
-    def get_target_owners_trades(address, duration)
-      result = {total_count: 0, data: []}
-      response = fetch_trades(address, duration)
+    def get_target_owners_trades(nft_id, date=Date.yesterday)
+      result = {total_count: 0, data: {}}
 
-      if response
-        data = JSON.parse(response)
-        total_count = data["result"].sum{|r| r["token_ids"].count}
-        result[:total_count] = total_count
-        target_nfts.each do |nft|
-          owners = OwnerNft.where(nft_id: nft.id).includes(:owner).map{|o| o.owner.address}
-          purchase_count = data["result"].select{|r| owners.include?(r["buyer_address"])}.sum{|r| r["token_ids"].count}
+      histories = NftPurchaseHistory.where(nft_id: nft_id, purchase_date: date)
 
-          result[:data].push(
-            {
-              nft: nft.name,
-              purchase_count: purchase_count
-            }
-          )
-        end
+      owners = OwnerNft.where(event_date: date, nft_id: target_nfts.pluck(:id)).includes(:nft).group_by{|o| o.nft.name}.inject({}){|sum, d| sum.merge!({d[0] => d[1].map(&:owner_id)})}
+      owners.each do |nft_name, owner_ids|
+        purchase_count = histories.select{|h| owner_ids.include?(h.owner_id)}.sum(&:amount)
+
+        result[:total_count] += purchase_count
+        result[:data].merge!({nft_name => purchase_count})
       end
 
-      result
+      TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "purchase").first_or_create(data: result)
     end
 
     def target_nfts
@@ -70,7 +63,7 @@ class NftOwnerService
         NftsView.includes(:owner_nfts).each do |nft|
           next if target_ids.include?(nft.nft_id)
           tokens_count = nft.owner_nfts.where(owner_id: owner_ids).sum(:amount)
-          owners_count = get_target_owners_ratio(nft.nft_id).sum{|r| r[:owners_count]}
+          owners_count = TargetNftOwnerHistory.holding.where(nft_id: nft.nft_id, event_date: Date.yesterday).take.data[:data].sum{|i| i.values.sum{|y| y[:owners_count]}}
 
           result.push(
             {

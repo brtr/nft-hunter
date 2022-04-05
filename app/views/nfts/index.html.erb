@@ -6,6 +6,8 @@
         <th scope="col">
           <%= link_to "Name", nfts_path(sort_by: "Name", sort: @sort) %>
         </th>
+        <th scope="col">Rank 24H</th>
+        <th scope="col">Rank 3D</th>
         <th scope="col">Floor Price</th>
         <th scope="col">
           <%= link_to "24h", nfts_path(sort_by: "variation", sort: @sort) %>
@@ -25,26 +27,28 @@
       </tr>
     </thead>
     <tbody>
-       <% @nfts.each_with_index do |nft, idx| %>
+       <% @nfts.each do |nft| %>
         <tr>
-          <td><%= idx + 1 %></td>
+          <td style="width: 6%"><%= nft.eth_volume_rank %></td>
           <td>
             <%= link_to nft_path(nft.slug), class: "nft-name" do %>
               <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
               <span class="text-dark"><%= nft.name.humanize %></span>
             <% end %>
           </td>
-          <td>
-            <%= number_to_currency nft.floor_price_24h %>
+          <td class="text-<%= change_text_color(nft.volume_rank_24h.to_f) %>"><%= nft.volume_rank_24h %></td>
+          <td class="text-<%= change_text_color(nft.volume_rank_3d.to_f) %>"><%= nft.volume_rank_3d %></td>
+          <td style="width: 6%">
+            <%= "#{nft.eth_floor_price_24h} ETH" %>
             <%= link_to nft.opensea_url, target: "_blank" do %>
               <i class="ai-compass fs-lg me-2"></i>
             <% end if nft.opensea_url %>
           </td>
           <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
-          <td><%= number_to_currency nft.volume_24h %></td>
-          <td><%= nft.sales_24h %></td>
+          <td><%= "#{nft.eth_volume_24h.to_f.round(2)} ETH" %></td>
+          <td style="width: 4%"><%= nft.sales_24h %></td>
           <td><%= listed_and_supply_radio(nft.total_supply, nft.listed_ratio) %></td>
-          <td><%= number_to_currency nft.floor_cap %></td>
+          <td><%= "#{nft.eth_floor_cap} ETH" %></td>
         </tr>
       <% end %>
     </tbody>

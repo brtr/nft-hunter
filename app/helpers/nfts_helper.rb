@@ -10,14 +10,8 @@ module NftsHelper
   end
 
   def listed_and_supply_radio(supply, listed_ratio)
-    listed = supply * listed_ratio rescue 0
-    "#{listed.to_i} / #{supply.to_i} (#{listed_ratio.to_f.round(2)}) %"
-  end
-
-  def get_rank(idx, page)
-    rank = idx + 1
-    rank = rank + 50 * (page - 1) if page > 1
-    rank
+    listed = supply * listed_ratio / 100 rescue 0
+    "#{listed.to_i} / #{supply.to_i} (#{listed_ratio.to_f.round(2)}%)"
   end
 
   def get_chain_name(chain_id)
@@ -61,5 +55,15 @@ module NftsHelper
       token_ratio: "#{tokens_count} (#{(ratio * 100).round(2)}%)",
       owners_count: owners_count
     }
+  end
+
+  def fetch_purchase_history_data(data)
+    result = {total_count: 0, data: []}
+    result[:total_count] = data.sum{|d| d[:total_count]}
+    result[:data] = data.map{|x| x[:data]}.flatten.reduce({}) do |sums, location|
+      sums.merge(location) { |_, a, b| a + b }
+    end
+
+    result
   end
 end
