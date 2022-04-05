@@ -101,10 +101,10 @@ class NftOwnerService
       end
     end
 
-    def fetch_owners
+    def fetch_owners(mode="manual")
       Nft.where.not(address: nil).each do |nft|
         puts nft.name
-        nft.fetch_owners
+        nft.fetch_owners(mode)
         sleep 3
       end
     end

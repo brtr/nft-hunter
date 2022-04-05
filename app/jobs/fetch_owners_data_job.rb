@@ -3,6 +3,6 @@ class FetchOwnersDataJob < ApplicationJob
 
   def perform
     NftOwnerService.fetch_target_nft_owners_data(1)
-    NftOwnerService.fetch_owners
+    NftOwnerService.fetch_owners("auto")
   end
 end

@@ -10,10 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_05_070801) do
+ActiveRecord::Schema.define(version: 2022_04_05_113536) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "fetch_data_logs", force: :cascade do |t|
+    t.integer "fetch_type"
+    t.string "source"
+    t.string "url"
+    t.string "error_msgs"
+    t.datetime "event_time"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
 
   create_table "holding_rank_snap_shot_views", force: :cascade do |t|
     t.integer "holding_rank_snap_shot_id"

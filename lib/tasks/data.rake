@@ -33,7 +33,7 @@ namespace :data do
   desc 'Fetch nft owners'
   task fetch_nft_owners: :environment do
     puts "Start at #{Time.now}"
-    NftOwnerService.fetch_owners
+    NftOwnerService.fetch_owners("auto")
     puts "End at #{Time.now}"
   end
 

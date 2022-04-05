@@ -50,24 +50,27 @@ class Nft < ApplicationRecord
     end
   end
 
-  def fetch_owners(cursor=nil)
+  def fetch_owners(mode="manual", cursor=nil)
     return unless address
-    url = "https://deep-index.moralis.io/api/v2/nft/#{address}/owners?chain=eth&format=decimal"
-    url += "&cursor=#{cursor}" if cursor
-    response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 20}).read rescue nil
-    if response
-      data = JSON.parse(response)
-      result = data["result"].group_by{|x| x["owner_of"]}.inject({}){|sum, x| sum.merge({x[0] => x[1].map{|y| y["token_id"]}})}
-      puts "#{name} has #{result.count} owners"
-      result.each do |address, token_ids|
-        owner = Owner.where(address: address).first_or_create
-        owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: Date.yesterday).first_or_create
-        owner_nft.update(amount: token_ids.count, token_ids: token_ids)
-      end
+    begin
+      url = "https://deep-index.moralis.io/api/v2/nft/#{address}/owners?chain=eth&format=decimal"
+      url += "&cursor=#{cursor}" if cursor
+      response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read
+      if response
+        data = JSON.parse(response)
+        result = data["result"].group_by{|x| x["owner_of"]}.inject({}){|sum, x| sum.merge({x[0] => x[1].map{|y| y["token_id"]}})}
+        puts "#{name} has #{result.count} owners"
+        result.each do |address, token_ids|
+          owner = Owner.where(address: address).first_or_create
+          owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: Date.yesterday).first_or_create
+          owner_nft.update(amount: token_ids.count, token_ids: token_ids)
+        end
 
-      sleep 3
-      fetch_owners(data["cursor"]) if data["cursor"].present?
-    else
+        sleep 3
+        fetch_owners(mode, data["cursor"]) if data["cursor"].present?
+      end
+    rescue => e
+      FetchDataLog.create(fetch_type: mode, source: "Fetch Owner", url: url, error_msgs: e)
       puts "Fetch moralis Error: #{name} can't fetch owners"
     end
   end
