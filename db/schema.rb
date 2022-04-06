@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_05_113536) do
+ActiveRecord::Schema.define(version: 2022_04_06_025232) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -45,6 +45,14 @@ ActiveRecord::Schema.define(version: 2022_04_05_113536) do
     t.decimal "volume_24h"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.decimal "eth_floor_price_24h"
+    t.decimal "eth_floor_cap"
+    t.decimal "eth_volume_24h"
+    t.decimal "eth_volume_rank"
+    t.decimal "eth_volume_rank_24h"
+    t.decimal "eth_volume_rank_3d"
+    t.decimal "volume_rank_24h"
+    t.decimal "volume_rank_3d"
     t.index ["holding_rank_snap_shot_id", "nft_id"], name: "index_holding_rank_snap_shot_id_and_nft_id", unique: true
     t.index ["holding_rank_snap_shot_id"], name: "index_holding_rank_snap_shot_views_on_holding_rank_snap_shot_id"
   end

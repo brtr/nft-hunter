@@ -12,9 +12,11 @@ global.Chart = Chart;
 
 
 $(document).on('turbolinks:load', function() {
-  'use strict';
+    'use strict';
 
     $(function() {
+      $('[data-bs-toggle="tooltip"]').tooltip({html: true});
+
       $("input[name='period']").on("click", function() {
         this.form.submit();
       })

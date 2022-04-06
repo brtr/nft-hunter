@@ -51,13 +51,15 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.listed_ratio,
       ROUND(n.variation, 2) as variation,
       h1.sales as sales_24h,
-      h1.floor_price as floor_price_24h,
+      ROUND(h1.floor_price, 2) as floor_price_24h,
       h1.eth_floor_price as eth_floor_price_24h,
       h1.volume as volume_24h,
       h1.eth_volume as eth_volume_24h,
       h1.eth_volume_rank as eth_volume_rank,
-      COALESCE((case when h2.eth_volume_rank = 0 then h1.eth_volume_rank else h1.eth_volume_rank - h2.eth_volume_rank end ), 0) as volume_rank_24h,
-      COALESCE((case when h3.eth_volume_rank = 0 then h1.eth_volume_rank else h1.eth_volume_rank - h3.eth_volume_rank end ), 0) as volume_rank_3d
+      h2.eth_volume_rank as eth_volume_rank_24h,
+      h3.eth_volume_rank as eth_volume_rank_3d,
+      COALESCE((case when h2.eth_volume_rank = 0 then h1.eth_volume_rank else h2.eth_volume_rank - h1.eth_volume_rank end ), 0) as volume_rank_24h,
+      COALESCE((case when h3.eth_volume_rank = 0 then h1.eth_volume_rank else h3.eth_volume_rank - h1.eth_volume_rank end ), 0) as volume_rank_3d
       FROM nfts as n
       LEFT JOIN histories_today as h1 on h1.nft_id = n.id
       LEFT JOIN histories_24h as h2 on h2.nft_id = n.id

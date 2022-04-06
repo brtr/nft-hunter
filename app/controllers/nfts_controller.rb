@@ -10,9 +10,9 @@ class NftsController < ApplicationController
 
   def show
     date = Date.yesterday
-    yesterday_histories = @nft.target_nft_owner_histories.where(event_date: date)
-    @owners_data = yesterday_histories.holding.take.data
-    @purchase_24h = yesterday_histories.purchase.take.data
+    latest_histories = @nft.target_nft_owner_histories.last_day
+    @owners_data = latest_histories.holding.take.data
+    @purchase_24h = latest_histories.purchase.take.data
     @purchase_7d = @nft.target_nft_owner_histories.purchase.where(event_date: [date - 7.days..date]).map(&:data)
     @price_data = PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_price_data
     @holding_data = PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_holding_data

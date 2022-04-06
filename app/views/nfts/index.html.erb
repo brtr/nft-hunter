@@ -36,10 +36,10 @@
               <span class="text-dark"><%= nft.name.humanize %></span>
             <% end %>
           </td>
-          <td class="text-<%= change_text_color(nft.volume_rank_24h.to_f) %>"><%= nft.volume_rank_24h %></td>
-          <td class="text-<%= change_text_color(nft.volume_rank_3d.to_f) %>"><%= nft.volume_rank_3d %></td>
-          <td style="width: 6%">
-            <%= "#{nft.eth_floor_price_24h} ETH" %>
+          <td class="text-<%= change_text_color(nft.volume_rank_24h.to_f) %>" data-bs-toggle="tooltip" title='<%= "#{nft.eth_volume_rank_24h} -> #{nft.eth_volume_rank}" %>'><%= nft.volume_rank_24h %></td>
+          <td class="text-<%= change_text_color(nft.volume_rank_3d.to_f) %>" data-bs-toggle="tooltip" title='<%= "#{nft.eth_volume_rank_3d} -> #{nft.eth_volume_rank}" %>'><%= nft.volume_rank_3d %></td>
+          <td style="width: 10%">
+            <%= "#{nft.eth_floor_price_24h.to_f.round(2)} ETH" %>
             <%= link_to nft.opensea_url, target: "_blank" do %>
               <i class="ai-compass fs-lg me-2"></i>
             <% end if nft.opensea_url %>
