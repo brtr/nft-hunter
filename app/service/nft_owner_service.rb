@@ -101,11 +101,12 @@ class NftOwnerService
       end
     end
 
-    def fetch_owners(mode="manual")
+    def fetch_owners(mode="manual", date=Date.yesterday)
       Nft.where.not(address: nil).each do |nft|
+        next if nft.owner_nfts.where(event_date: date).sum(:amount).to_f == nft.total_supply.to_f
         puts nft.name
         nft.fetch_owners(mode)
-        sleep 3
+        sleep 5
       end
     end
   end

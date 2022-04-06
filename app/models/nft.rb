@@ -62,15 +62,17 @@ class Nft < ApplicationRecord
         puts "#{name} has #{result.count} owners"
         result.each do |address, token_ids|
           owner = Owner.where(address: address).first_or_create
-          owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: Date.yesterday).first_or_create
-          owner_nft.update(amount: token_ids.count, token_ids: token_ids)
+          owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: Date.yesterday).first_or_create(amount: 0, token_ids: [])
+          owner_nft.amount += token_ids.count
+          owner_nft.token_ids += token_ids
+          owner_nft.save
         end
 
         sleep 5
         fetch_owners(mode, data["cursor"]) if data["cursor"].present?
       end
     rescue => e
-      FetchDataLog.create(fetch_type: mode, source: "Fetch Owner", url: url, error_msgs: e)
+      FetchDataLog.create(fetch_type: mode, source: "Fetch Owner", url: url, error_msgs: e, event_time: Date.today)
       puts "Fetch moralis Error: #{name} can't fetch owners"
     end
   end
