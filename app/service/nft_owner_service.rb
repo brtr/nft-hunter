@@ -24,8 +24,8 @@ class NftOwnerService
       TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "holding").first_or_create(data: result)
     end
 
-    def total_owners(nft_id)
-      OwnerNft.where(nft_id: nft_id).pluck(:owner_id)
+    def total_owners(nft_id, date=Date.yesterday)
+      OwnerNft.where(nft_id: nft_id, event_date: date).pluck(:owner_id)
     end
 
     def fetch_trades(address, duration)
@@ -55,11 +55,11 @@ class NftOwnerService
       Nft.where(is_marked: true)
     end
 
-    def get_target_owners_rank
+    def get_target_owners_rank(date=Date.yesterday)
       result = []
       if result.blank?
         target_ids = target_nfts.pluck(:id)
-        owner_ids = OwnerNft.where(nft_id: target_ids).pluck(:owner_id).uniq
+        owner_ids = OwnerNft.where(event_date: date, nft_id: target_ids).pluck(:owner_id).uniq
         NftsView.includes(:owner_nfts).each do |nft|
           next if target_ids.include?(nft.nft_id)
           tokens_count = nft.owner_nfts.where(owner_id: owner_ids).sum(&:amount)
@@ -79,8 +79,8 @@ class NftOwnerService
       result.sort_by{|r| r[:tokens_count]}.reverse.first(10)
     end
 
-    def fetch_target_nft_owners_data(duration)
-      target_owners = OwnerNft.includes(:owner).where(nft_id: target_nfts.pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
+    def fetch_target_nft_owners_data(duration, date=Date.yesterday)
+      target_owners = OwnerNft.includes(:owner).where(event_date: date, nft_id: target_nfts.pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
       Nft.all.each do |nft|
         response = fetch_trades(nft.address, duration)
 

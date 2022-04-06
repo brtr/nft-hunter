@@ -7,6 +7,6 @@ class TargetNftOwnerHistory < ApplicationRecord
 
   def self.last_day
     date = TargetNftOwnerHistory.order(event_date: :asc).last.event_date
-    TargetNftOwnerHistory.where(event_date: [date - 1.day..date])
+    TargetNftOwnerHistory.where(event_date: date)
   end
 end

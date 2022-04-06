@@ -66,7 +66,7 @@ class Nft < ApplicationRecord
           owner_nft.update(amount: token_ids.count, token_ids: token_ids)
         end
 
-        sleep 3
+        sleep 5
         fetch_owners(mode, data["cursor"]) if data["cursor"].present?
       end
     rescue => e
