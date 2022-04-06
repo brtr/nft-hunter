@@ -63,9 +63,8 @@ class Nft < ApplicationRecord
         result.each do |address, token_ids|
           owner = Owner.where(address: address).first_or_create
           owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: Date.yesterday).first_or_create(amount: 0, token_ids: [])
-          owner_nft.amount += token_ids.count
-          owner_nft.token_ids += token_ids
-          owner_nft.save
+          token_ids = owner_nft.token_ids | token_ids
+          owner_nft.update(amount: token_ids.count, token_ids: token_ids)
         end
 
         sleep 5
@@ -83,7 +82,7 @@ class Nft < ApplicationRecord
       asset = result.select{|r| r["slug"] == slug}.first
       if asset
         self.update(total_supply: asset["totalSupply"], listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"],
-          variation: asset["variationUSD"], opensea_url: asset["url"], eth_floor_cap: asset["floorCapETH"])
+          variation: asset["variationUSD"], opensea_url: asset["url"], opensea_slug: slug, eth_floor_cap: asset["floorCapETH"])
         self.fetch_pricefloor_histories
       else
         return false

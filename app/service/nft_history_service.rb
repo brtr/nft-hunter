@@ -11,7 +11,7 @@ class NftHistoryService
           nft = Nft.where(slug: slug, chain_id: 1).first
           next if slug.blank? || nft.blank?
           nft.update(total_supply: asset["totalSupply"], listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"],
-                    variation: asset["variationUSD"], opensea_url: asset["url"], eth_floor_cap: asset["floorCapETH"])
+                    variation: asset["variationUSD"], opensea_url: asset["url"], opensea_slug: slug, eth_floor_cap: asset["floorCapETH"])
           sales_data = asset["salesData"]
           h = nft.nft_histories.where(event_date: Date.yesterday).first_or_create
           h.update(floor_price: asset["floorPriceUSD"], eth_floor_price: asset["floorPriceETH"], sales: sales_data["numberSales24h"],
