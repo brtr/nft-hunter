@@ -63,7 +63,7 @@ class NftOwnerService
         NftsView.includes(:owner_nfts).each do |nft|
           next if target_ids.include?(nft.nft_id)
           tokens_count = nft.owner_nfts.where(owner_id: owner_ids).sum(&:amount)
-          owners_count = TargetNftOwnerHistory.holding.where(nft_id: nft.nft_id, event_date: Date.yesterday).take.data[:data].sum{|i| i.values.sum{|y| y[:owners_count]}} rescue 0
+          owners_count = TargetNftOwnerHistory.holding.where(nft_id: nft.nft_id, event_date: date).take.data[:data].sum{|i| i.values.sum{|y| y[:owners_count]}} rescue 0
 
           result.push(
             {
@@ -101,7 +101,7 @@ class NftOwnerService
       end
     end
 
-    def fetch_owners(mode="manual", date=Date.yesterday)
+    def fetch_owners(mode="manual", date=Date.today)
       Nft.where.not(address: nil).each do |nft|
         next if nft.owner_nfts.where(event_date: date).sum(:amount).to_f == nft.total_supply.to_f
         puts nft.name
