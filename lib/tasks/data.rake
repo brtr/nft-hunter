@@ -30,13 +30,6 @@ namespace :data do
     p "Create nfts_view success"
   end
 
-  desc 'Fetch nft owners'
-  task fetch_nft_owners: :environment do
-    puts "Start at #{Time.now}"
-    NftOwnerService.fetch_owners("auto")
-    puts "End at #{Time.now}"
-  end
-
   desc 'Fetch target nft owners purchase data'
   task :fetch_target_nft_owners_purchase, [:duration] => [:environment] do |task, args|
     NftOwnerService.fetch_target_nft_owners_purchase(args[:duration])

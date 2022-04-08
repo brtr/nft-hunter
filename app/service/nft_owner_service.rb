@@ -109,13 +109,11 @@ class NftOwnerService
       OwnerNft.includes(:owner).where(event_date: date, nft_id: target_nfts.pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
     end
 
-    def fetch_owners(mode="manual", date=Date.today)
-      Nft.order(is_marked: :desc).each do |nft|
-        next if nft.owner_nfts.where(event_date: date).sum(:amount).to_f == nft.total_supply.to_f
-        puts nft.name
-        nft.fetch_owners(mode: mode)
-        sleep 5
-      end
+    def fetch_owners(nft_id: nil, mode: "manual", date: Date.today)
+      nft = Nft.find nft_id
+      return if nft.nil? || nft.owner_nfts.where(event_date: date).sum(:amount).to_f == nft.total_supply.to_f
+      puts nft.name
+      nft.fetch_owners(mode: mode)
     end
   end
 end
