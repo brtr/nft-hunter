@@ -6,7 +6,7 @@ class TargetNftOwnerHistory < ApplicationRecord
   enum n_type: [:holding, :purchase]
 
   def self.last_day
-    date = TargetNftOwnerHistory.order(event_date: :asc).last.event_date
+    date = TargetNftOwnerHistory.order(event_date: :asc).last.event_date rescue Date.yesterday
     TargetNftOwnerHistory.where(event_date: date)
   end
 end

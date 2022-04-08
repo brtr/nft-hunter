@@ -79,33 +79,41 @@ class NftOwnerService
       result.sort_by{|r| r[:tokens_count]}.reverse.first(10)
     end
 
-    def fetch_target_nft_owners_data(duration, date=Date.yesterday)
-      target_owners = OwnerNft.includes(:owner).where(event_date: date, nft_id: target_nfts.pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
+    def fetch_target_nft_owners_purchase(duration, date=Date.yesterday)
+      target_owners = get_target_owners(date)
       Nft.all.each do |nft|
-        response = fetch_trades(nft.address, duration)
+        fetch_purchase_histories(nft, duration, target_owners)
+      end
+    end
 
-        if response
-          data = JSON.parse(response) rescue nil
-          if data
-            data["result"].each do |r|
-              owners_address = target_owners.keys
-              address = r["buyer_address"]
+    def fetch_purchase_histories(nft, duration, target_owners)
+      response = fetch_trades(nft.address, duration)
 
-              if owners_address.include?(address)
-                h = nft.nft_purchase_histories.where(owner_id: target_owners[address], purchase_date: r["block_timestamp"]).first_or_create
-                h.update(amount: r["token_ids"].count)
-              end
+      if response
+        data = JSON.parse(response) rescue nil
+        if data
+          data["result"].each do |r|
+            owners_address = target_owners.keys
+            address = r["buyer_address"]
+
+            if owners_address.include?(address)
+              h = nft.nft_purchase_histories.where(owner_id: target_owners[address], purchase_date: r["block_timestamp"]).first_or_create
+              h.update(amount: r["token_ids"].count)
             end
           end
         end
       end
     end
 
+    def get_target_owners(date=Date.yesterday)
+      OwnerNft.includes(:owner).where(event_date: date, nft_id: target_nfts.pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
+    end
+
     def fetch_owners(mode="manual", date=Date.today)
       Nft.where.not(address: nil).each do |nft|
         next if nft.owner_nfts.where(event_date: date).sum(:amount).to_f == nft.total_supply.to_f
         puts nft.name
-        nft.fetch_owners(mode)
+        nft.fetch_owners(mode: mode)
         sleep 5
       end
     end

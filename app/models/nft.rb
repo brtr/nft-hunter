@@ -31,7 +31,7 @@ class Nft < ApplicationRecord
   def fetch_covalent_histories
     end_date = Date.today.strftime("%Y-%m-%d")
     start_date = (Date.today - 1.year).strftime("%Y-%m-%d")
-    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?from=#{start_date}&to=#{end_date}&key=ckey_docs", {read_timeout: 20}).read rescue nil
+    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?quote-currency=ETH&from=#{start_date}&to=#{end_date}&key=ckey_docs", {read_timeout: 20}).read rescue nil
     if response
       data = JSON.parse(response)
       items = data["data"]["items"]
@@ -40,7 +40,7 @@ class Nft < ApplicationRecord
       if items.any?
         items.each do |item|
           h = nft_histories.where(event_date: item["opening_date"]).first_or_create
-          h.update(floor_price: item["floor_price_quote_7d"], volume: item["volume_quote_day"], sales: item["unique_token_ids_sold_count_day"])
+          h.update(eth_floor_price: item["floor_price_quote_7d"], eth_volume: item["volume_quote_day"], sales: item["unique_token_ids_sold_count_day"])
         end
       else
         puts "Fetch covalent histories Error: #{name} does not have history data!"
@@ -50,7 +50,7 @@ class Nft < ApplicationRecord
     end
   end
 
-  def fetch_owners(mode="manual", cursor=nil)
+  def fetch_owners(mode: "manual", cursor: nil, date: Date.today)
     return unless address
     begin
       url = "https://deep-index.moralis.io/api/v2/nft/#{address}/owners?chain=eth&format=decimal"
@@ -62,13 +62,13 @@ class Nft < ApplicationRecord
         puts "#{name} has #{result.count} owners"
         result.each do |address, token_ids|
           owner = Owner.where(address: address).first_or_create
-          owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: Date.today).first_or_create(amount: 0, token_ids: [])
+          owner_nft = owner.owner_nfts.where(nft_id: self.id, event_date: date).first_or_create(amount: 0, token_ids: [])
           token_ids = owner_nft.token_ids | token_ids
           owner_nft.update(amount: token_ids.count, token_ids: token_ids)
         end
 
-        sleep 5
-        fetch_owners(mode, data["cursor"]) if data["cursor"].present?
+        sleep 3
+        fetch_owners(mode: mode, cursor: data["cursor"], date: date) if data["cursor"].present?
       end
     rescue => e
       FetchDataLog.create(fetch_type: mode, source: "Fetch Owner", url: url, error_msgs: e, event_time: DateTime.now)

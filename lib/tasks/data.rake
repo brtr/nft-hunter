@@ -38,7 +38,7 @@ namespace :data do
   end
 
   desc 'Fetch target nft owners purchase data'
-  task :fetch_target_nft_owners_data, [:duration] => [:environment] do |task, args|
-    NftOwnerService.fetch_target_nft_owners_data(args[:duration])
+  task :fetch_target_nft_owners_purchase, [:duration] => [:environment] do |task, args|
+    NftOwnerService.fetch_target_nft_owners_purchase(args[:duration])
   end
 end

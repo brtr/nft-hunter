@@ -31,6 +31,7 @@ class NftsController < ApplicationController
       end
 
       NftHistoryService.generate_nfts_view
+      FetchSingleNftDataJob.perform_later(nft.id)
 
       redirect_to nfts_path, notice: "Add NFT successful!"
     else
