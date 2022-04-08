@@ -30,7 +30,7 @@ class NftsController < ApplicationController
         nft.fetch_covalent_histories
       end
 
-      NftHistoryService.generate_nfts_view
+      NftHistoryService.get_floor_price_from_moralis(nft)
       FetchSingleNftDataJob.perform_later(nft.id)
 
       redirect_to nfts_path, notice: "Add NFT successful!"
