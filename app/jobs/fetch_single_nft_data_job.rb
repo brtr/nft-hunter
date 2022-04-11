@@ -3,6 +3,9 @@ class FetchSingleNftDataJob < ApplicationJob
 
   def perform(nft_id, date=Date.yesterday)
     nft = Nft.find nft_id
+    nft.sync_opensea_stats
+    nft.fetch_covalent_histories
+    sleep 2
     nft.fetch_owners(mode: "auto", date: date)
     sleep 2
     target_owners = NftOwnerService.get_target_owners(date)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_06_081033) do
+ActiveRecord::Schema.define(version: 2022_04_11_083631) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -89,6 +89,18 @@ ActiveRecord::Schema.define(version: 2022_04_06_081033) do
     t.index ["nft_id", "owner_id"], name: "index_nft_purchase_histories_on_nft_id_and_owner_id"
   end
 
+  create_table "nft_trades", force: :cascade do |t|
+    t.integer "nft_id"
+    t.string "buyer"
+    t.string "seller"
+    t.string "token_id"
+    t.decimal "trade_price"
+    t.datetime "trade_time"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["nft_id"], name: "index_nft_trades_on_nft_id"
+  end
+
   create_table "nfts", force: :cascade do |t|
     t.integer "chain_id"
     t.string "name"
@@ -107,6 +119,7 @@ ActiveRecord::Schema.define(version: 2022_04_06_081033) do
     t.boolean "is_marked", default: false
     t.decimal "eth_floor_cap"
     t.string "opensea_slug"
+    t.integer "user_id"
   end
 
   create_table "owner_nfts", force: :cascade do |t|
@@ -136,6 +149,12 @@ ActiveRecord::Schema.define(version: 2022_04_06_081033) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["nft_id", "event_date", "n_type"], name: "index_target_nft_owner_histories_on_nft_id_event_date_and_type", unique: true
     t.index ["nft_id"], name: "index_target_nft_owner_histories_on_nft_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "address"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
 end

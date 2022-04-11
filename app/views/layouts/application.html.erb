@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>NftHunter</title>
+    <title>Nft-Hunter</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -12,8 +12,11 @@
   </head>
 
   <body>
-    <div class="container">
-      <main class="container">
+    <div id="spinner" class="hide">
+      <%= image_tag("loading.svg") %>
+    </div>
+    <div class="is-sidebar">
+      <main class="page-wrapper">
         <div class="_0cbf1c3d417e250a" data-options="count=1,interval=1,burst=1" data-zone="563f816c23384f44821678a782c58acf" style="display: none"></div>
         <div class="_0cbf1c3d417e250a" data-zone="0016c6326b444d129d0b1aa1260a5aa6" style="width:930px;height:180px;display: inline-block;margin: 0 auto"></div>
         <header class="header navbar navbar-expand-lg navbar-light bg-light navbar-shadow navbar-sticky" data-scroll-header data-fixed-element>
@@ -22,9 +25,23 @@
               <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand flex-shrink-0 order-lg-1 mx-auto ms-lg-0 pe-lg-2 me-lg-4" href="/">
-              <%#= image_tag "logo.png", class: "d-none d-lg-block", width: "153" %>
-              <h2>NFT Hunter</h2>
+              <%= image_tag "logo.png", class: "d-none d-lg-block web-logo" %>
             </a>
+            <div class="d-flex align-items-center order-lg-3 ms-lg-auto loginBtns">
+              <div class="navbar-tool dropdown connect-btn">
+                <%= link_to "Connect Metamask", "#", class: "btn btn-warning", id: "loginBtn" %>
+              </div>
+              <div class="navbar-tool dropdown hide">
+                <a href="#" role="button" class="navbar-tool-label">
+                  <h4 id="login_address"></h4>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <%= link_to "Log out", "#", class: "dropdown-item", id: "logoutBtn" %>
+                  </li>
+                </ul>
+              </div>
+            </div>
             <div class="offcanvas offcanvas-collapse order-lg-2" id="primaryMenu">
               <div class="offcanvas-header navbar-shadow">
                 <button class="btn-close lead" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -46,14 +63,16 @@
                       </li>
                     </ul>
                   </li>
-                  <li class="nav-item dropdown">
-                    <%= link_to "NFT", '#', class: "nav-link dropdown-toggle #{@page_index.in?([3]) ? 'active' : ''}", data: {"bs-toggle": "dropdown"} %>
-                    <ul class="dropdown-menu">
-                      <li class="dropdown">
-                        <%= link_to "Add NFT", new_nft_path, class: "dropdown-item #{@page_index == 3 ? 'active' : ''}" %>
-                      </li>
-                    </ul>
-                  </li>
+                  <% if is_admin? %>
+                    <li class="nav-item dropdown">
+                      <%= link_to "NFT", '#', class: "nav-link dropdown-toggle #{@page_index.in?([3]) ? 'active' : ''}", data: {"bs-toggle": "dropdown"} %>
+                      <ul class="dropdown-menu">
+                        <li class="dropdown">
+                          <%= link_to "Add NFT", new_nft_path, class: "dropdown-item #{@page_index == 3 ? 'active' : ''}" %>
+                        </li>
+                      </ul>
+                    </li>
+                  <% end %>
                 </ul>
               </div>
             </div>

@@ -7,10 +7,14 @@ Rails.application.routes.draw do
   mount Sidekiq::Web => "/sidekiq"
   mount API::Root => '/'
 
-  resources :nfts, only: [:index, :new, :create, :show] do
+  resources :nfts, except: :destroy do
     get :purchase_rank, on: :collection
     get :holding_rank, on: :collection
+    get :sync_data, on: :member
   end
 
   resources :holding_rank_snap_shots, only: [:index, :show]
+
+  post 'login', to: "users#login", as: :login
+  post 'logout', to: "users#logout", as: :logout
 end

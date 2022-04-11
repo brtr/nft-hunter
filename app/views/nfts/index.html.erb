@@ -10,6 +10,10 @@
         <th scope="col">Rank 3D</th>
         <th scope="col">Floor Price</th>
         <th scope="col">
+          <%= link_to "BCHP", nfts_path(sort_by: "bchp", sort: @sort) %>
+        </th>
+        <th scope="col">Holding Median 30D</th>
+        <th scope="col">
           <%= link_to "24h", nfts_path(sort_by: "variation", sort: @sort) %>
         </th>
         <th scope="col">
@@ -24,12 +28,13 @@
         <th scope="col">
           <%= link_to "Floor Cap", nfts_path(sort_by: "floor_cap", sort: @sort) %>
         </th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
        <% @nfts.each do |nft| %>
         <tr>
-          <td style="width: 6%"><%= nft.eth_volume_rank %></td>
+          <td style="width: 3%"><%= nft.eth_volume_rank %></td>
           <td>
             <%= link_to nft_path(nft.slug), class: "nft-name" do %>
               <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
@@ -44,11 +49,19 @@
               <i class="ai-compass fs-lg me-2"></i>
             <% end if nft.opensea_url %>
           </td>
-          <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
-          <td><%= "#{nft.eth_volume_24h.to_f.round(2)} ETH" %></td>
-          <td style="width: 4%"><%= nft.sales_24h %></td>
+          <td style="width: 6%"><%= "#{nft.bchp.to_f.round(2)} %" %></td>
+          <td><%= "#{NftOwnerService.holding_time_median(nft.id)} Days" %></td>
+          <td style="width: 3%" class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
+          <td style="width: 8%"><%= "#{nft.eth_volume_24h.to_f.round(2)} ETH" %></td>
+          <td style="width: 3%"><%= nft.sales_24h %></td>
           <td><%= listed_and_supply_radio(nft.total_supply, nft.listed_ratio) %></td>
           <td><%= "#{nft.eth_floor_cap} ETH" %></td>
+          <% if current_user && nft.user_id == current_user.id %>
+            <td style="width: 6%">
+              <%= link_to "Edit", edit_nft_path(nft.nft_id), class: "btn btn-link"  %>
+              <%= link_to "Sync data", sync_data_nft_path(nft.nft_id), class: "btn btn-link synBtn" %>
+            </td>
+          <% end %>
         </tr>
       <% end %>
     </tbody>

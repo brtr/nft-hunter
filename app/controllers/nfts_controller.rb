@@ -1,15 +1,27 @@
 class NftsController < ApplicationController
-  before_action :get_nft, except: :index
+  before_action :get_nft, only: [:edit, :update, :sync_data]
+
   def index
     @page_index = 0
     @page = params[:page].to_i || 1
     sort_by = params[:sort_by] || "eth_volume_24h"
     @sort = params[:sort] == "desc" ? "asc" : "desc"
-    @nfts = NftsView.order("#{sort_by} #{@sort}").page(@page).per(50)
+    nfts = NftsView.includes(:nft)
+    if sort_by == "bchp"
+      if @sort == "desc"
+        @nfts = nfts.sort_by{|n| n.bchp}
+      else
+        @nfts = nfts.sort_by{|n| n.bchp}.reverse
+      end
+      @nfts = Kaminari.paginate_array(@nfts).page(@page).per(50)
+    else
+      @nfts = nfts.order("#{sort_by} #{@sort}").page(@page).per(50)
+    end
   end
 
   def show
     date = Date.yesterday
+    @nft = NftsView.find_by slug: params[:id]
     latest_histories = @nft.target_nft_owner_histories.last_day
     @owners_data = latest_histories.holding.take.data rescue {}
     @purchase_24h = latest_histories.purchase.take.data rescue {}
@@ -26,13 +38,9 @@ class NftsController < ApplicationController
   def create
     nft = Nft.new(nft_params)
     if nft.address.match(/^0x[a-fA-F0-9]{40}$/)
-      unless nft.fetch_pricefloor_nft
-        nft.fetch_covalent_histories
-      end
-
-      NftHistoryService.get_floor_price_from_moralis(nft)
-      FetchSingleNftDataJob.perform_later(nft.id)
-
+      nft.user_id = session[:user_id]
+      nft.save
+      NftHistoryService.generate_nfts_view
       redirect_to nfts_path, notice: "Add NFT successful!"
     else
       flash[:alert] = "Invalid address!"
@@ -40,6 +48,25 @@ class NftsController < ApplicationController
 
       render :new
     end
+  end
+
+  def edit
+  end
+
+  def update
+    if @nft.update(nft_params)
+      flash[:notice] = "Update NFT successful!"
+    else
+      flash[:alert] = @nft.errors.full_messages.join(', ')
+    end
+
+    redirect_to nfts_path
+  end
+
+  def sync_data
+    FetchSingleNftDataJob.perform_later(@nft.id)
+
+    redirect_to nfts_path, notice: "Data is syncing, please refresh the page later!"
   end
 
   def purchase_rank
@@ -56,7 +83,7 @@ class NftsController < ApplicationController
 
   private
   def get_nft
-    @nft = NftsView.find_by slug: params[:id]
+    @nft = Nft.find_by id: params[:id]
   end
 
   def period_date
@@ -68,6 +95,6 @@ class NftsController < ApplicationController
   end
 
   def nft_params
-    params.require(:nft).permit(:name, :slug, :address)
+    params.require(:nft).permit(:name, :slug, :address, :opensea_slug, :opensea_url, :logo, :total_supply)
   end
 end

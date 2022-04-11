@@ -6,6 +6,7 @@ class Nft < ApplicationRecord
   has_many :owners, through: :owner_nfts
   has_many :nft_purchase_histories
   has_many :target_nft_owner_histories
+  has_many :nft_trades
 
   def fetch_pricefloor_histories
     response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all", {read_timeout: 20}).read rescue nil
@@ -90,5 +91,69 @@ class Nft < ApplicationRecord
     else
       return false
     end
+  end
+
+  def sync_opensea_stats(mode="manual")
+    return unless opensea_slug
+
+    begin
+      url = "https://api.opensea.io/api/v1/collection/#{opensea_slug}/stats"
+      response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
+      if response
+        data = JSON.parse(response)
+        result = data["stats"]
+
+        self.update(total_supply: result["count"], floor_cap: result["market_cap"])
+        h = nft_histories.where(event_date: Date.yesterday).first_or_create
+        h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"])
+      end
+    rescue => e
+      FetchDataLog.create(fetch_type: mode, source: "Sync Opensea", url: url, error_msgs: e, event_time: DateTime.now)
+      puts "Fetch opensea Error: #{name} can't sync stats"
+    end
+  end
+
+  def sync_moralis_trades(mode="manual", cursor=nil)
+    return unless address
+    from_date = (Date.today - 1.month).strftime("%Y-%m-%d")
+
+    begin
+      url = "https://deep-index.moralis.io/api/v2/nft/#{address}/trades?chain=eth&marketplace=opensea&from_date=#{from_date}"
+      url += "&cursor=#{cursor}" if cursor
+      response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read
+      if response
+        data = JSON.parse(response)
+        result = data["result"]
+        if result.any?
+          result.each do |trade|
+            price = trade["price"].to_f / 10**18
+            trade["token_ids"].each do |token_id|
+              nft_trades.where(token_id: token_id, trade_time: trade["block_timestamp"], seller: trade["seller_address"],
+                buyer: trade["buyer_address"], trade_price: price).first_or_create
+            end
+          end
+        end
+      end
+
+      page = data["page"].to_i == 0 ? 1 : data["page"].to_i
+      if data["cursor"].present? && data["total"] > data["page_size"].to_i * page
+        sleep 3
+        sync_moralis_trades(mode, data["cursor"])
+      end
+    rescue => e
+      FetchDataLog.create(fetch_type: mode, source: "Sync Moralis", url: url, error_msgs: e, event_time: DateTime.now)
+      puts "Fetch moralis Error: #{name} can't sync trades"
+    end
+  end
+
+  def bchp
+    ratio = $redis.get("nft_bchp_ratio_#{id}")
+    unless ratio
+      total_owners = owner_nfts.where(event_date: Date.yesterday)
+      bchp_owners = total_owners.where(owner_id: OwnerNft.bchp_ids)
+      ratio = total_owners.size == 0 ? 0 : (bchp_owners.size / total_owners.size.to_f) * 100
+      $redis.set("nft_bchp_ratio_#{id}", ratio, ex: 20.minutes)
+    end
+    ratio.to_i
   end
 end
