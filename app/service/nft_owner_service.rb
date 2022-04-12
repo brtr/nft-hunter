@@ -26,13 +26,17 @@ class NftOwnerService
 
     def get_target_owners_trades(nft_id, date=Date.yesterday)
       trades = NftTrade.where(nft_id: nft_id, trade_time: [date.at_beginning_of_day..date.at_end_of_day])
-      result = {total_count: trades.size, bch_count: 0}
+      owners = OwnerNft.joins(:owner).where(nft_id: nft_id, event_date: date, owner: {address: trades.pluck(:buyer)})
+      result = {total_count: owners.size, bch_count: []}
 
-      owners = OwnerNft.where(event_date: date, nft_id: target_nfts.pluck(:id)).includes(:nft, :owner).group_by{|o| o.nft.name}.inject({}){|sum, d| sum.merge!({d[0] => d[1].map{|o| o.owner.address}})}
-      owners.each do |nft_name, owners_address|
-        purchase_count = trades.select{|h| owners_address.include?(h.buyer)}.size rescue 0
-        result[:bch_count] += purchase_count
+      target_nfts.each do |nft|
+        target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).map{|o| o.owner_id}.uniq
+        data = owners.select{|o| target_owners.include?(o.owner_id)}
+
+        result[:bch_count].push(data.pluck(:id).compact) if data.any?
       end
+
+      result[:bch_count] = result[:bch_count].flatten.uniq.size
 
       TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "purchase").first_or_create(data: result)
     end
@@ -118,11 +122,19 @@ class NftOwnerService
         end
 
         values = result.values.select{|v| v.is_a?(Float)}
-        median = values.size == 0 ? 0 : values.sum / values.size
+        median = values.size == 0 ? 0 : cal_median(values)
 
         $redis.set("nft_holding_time_median_#{nft_id}", median, ex: 20.minutes)
       end
       (median.to_f / 86400).round(2)
+    end
+
+    private
+    def cal_median(arr)
+      arr.sort!
+      len = arr.size
+      return arr[len / 2] if len.odd?
+      (arr[len / 2] + arr[len / 2 - 1]) / 2.0
     end
   end
 end
