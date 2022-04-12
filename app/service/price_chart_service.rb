@@ -20,7 +20,7 @@ class PriceChartService
   def get_holding_data
     result = {labels: labels, data: {}}
     TargetNftOwnerHistory.holding.where(event_date: [start_date..end_date], nft_id: nft_id).group_by(&:event_date).sort_by{|date, records| date}.each do |date, records|
-      result[:data].merge!({date => records.map{|x| x.data[:data].merge!(date: date)}})
+      result[:data].merge!({date => records.map{|x| {bch_count: x.data[:bch_count], date: date}}})
     end
     result
   end
@@ -28,7 +28,7 @@ class PriceChartService
   def get_purchase_data
     result = {labels: labels, data: {}}
     TargetNftOwnerHistory.purchase.where(event_date: [start_date..end_date], nft_id: nft_id).group_by(&:event_date).sort_by{|date, records| date}.each do |date, records|
-      result[:data].merge!({date => records.map{|x| x.data[:data].merge!(date: date)}})
+      result[:data].merge!({date => records.map{|x| {bch_count: x.data[:bch_count], date: date}}})
     end
     result
   end

@@ -22,7 +22,6 @@ document.addEventListener('turbolinks:load', () => {
     const chart_data = JSON.parse(ctx.canvas.dataset.data)
     const labels = chart_data.labels
     const holding_data = Object.values(chart_data.data)
-    console.log("data ", holding_data)
     new Chart(ctx, {
       type: 'line',
       data: {

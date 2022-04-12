@@ -5,22 +5,14 @@ class NftOwnerService
     def get_target_owners_ratio(nft_id, date=Date.yesterday)
       owners = OwnerNft.where(nft_id: nft_id, event_date: date)
 
-      result = {total_count: owners.size, data: {}}
+      result = {total_count: owners.size, bch_owners: []}
       target_nfts.each do |nft|
         target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).pluck(:owner_id)
         data = owners.select{|o| target_owners.include?(o.owner_id)}
 
-        ratio = owners.count == 0 ? 0 : (data.count.to_f / target_owners.count.to_f).round(2)
-
-        result[:data].merge!(
-          {
-            nft.name => {
-              owners_count: data.count,
-              owners_ratio: (ratio * 100).round(2)
-            }
-          }
-        )
+        result[:bch_owners].push(data.pluck(:owner_id).compact) if data.any?
       end
+      result[:bch_owners] = result[:bch_owners].flatten.uniq.size
 
       TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "holding").first_or_create(data: result)
     end
@@ -33,16 +25,13 @@ class NftOwnerService
     end
 
     def get_target_owners_trades(nft_id, date=Date.yesterday)
-      result = {total_count: 0, data: {}}
-
       histories = NftPurchaseHistory.where(nft_id: nft_id, purchase_date: date)
+      result = {total_count: histories.sum(&:amount), bch_count: 0}
 
       owners = OwnerNft.where(event_date: date, nft_id: target_nfts.pluck(:id)).includes(:nft).group_by{|o| o.nft.name}.inject({}){|sum, d| sum.merge!({d[0] => d[1].map(&:owner_id)})}
       owners.each do |nft_name, owner_ids|
-        purchase_count = histories.select{|h| owner_ids.include?(h.owner_id)}.sum(&:amount)
-
-        result[:total_count] += purchase_count
-        result[:data].merge!({nft_name => purchase_count})
+        purchase_count = histories.select{|h| owner_ids.include?(h.owner_id)}.sum(&:amount) rescue 0
+        result[:bch_count] += purchase_count
       end
 
       TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "purchase").first_or_create(data: result)

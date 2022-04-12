@@ -115,7 +115,9 @@ class Nft < ApplicationRecord
 
   def sync_moralis_trades(mode="manual", cursor=nil)
     return unless address
-    from_date = (Date.today - 1.month).strftime("%Y-%m-%d")
+    today = Date.today
+    date = Date.yesterday
+    from_date = nft_trades.where(trade_time: [date..today]).size > 0 ? date.strftime("%Y-%m-%d") : (today - 1.month).strftime("%Y-%m-%d")
 
     begin
       url = "https://deep-index.moralis.io/api/v2/nft/#{address}/trades?chain=eth&marketplace=opensea&from_date=#{from_date}"
@@ -149,11 +151,14 @@ class Nft < ApplicationRecord
   def bchp
     ratio = $redis.get("nft_bchp_ratio_#{id}")
     unless ratio
-      total_owners = owner_nfts.where(event_date: Date.yesterday)
       bchp_owners = total_owners.where(owner_id: OwnerNft.bchp_ids)
       ratio = total_owners.size == 0 ? 0 : (bchp_owners.size / total_owners.size.to_f) * 100
       $redis.set("nft_bchp_ratio_#{id}", ratio, ex: 20.minutes)
     end
-    ratio.to_i
+    ratio.to_f.round(2)
+  end
+
+  def total_owners
+    owner_nfts.where(event_date: Date.yesterday)
   end
 end

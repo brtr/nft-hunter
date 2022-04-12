@@ -85,38 +85,13 @@
   </div>
   <div class="col-4">
     <div class="mb-5">
-      <div class="card">
+      <div class="card" style="height: 160px">
         <div class="card-body">
           <div class="mt-2">
-            <h3 class="border-bottom">Total Owners <span class="float-end"><%= @owners_data[:total_count] %></span></h3>
-            <% (@owners_data[:data] || []).each do |nft, values| %>
-              <h5 class="border-bottom pb-2"><%= nft %><span class="float-end"><%= values[:owners_count] %>(<span class="text-primary"><%= "#{values[:owners_ratio]}%" %></span>)</span></h5>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="mb-5">
-      <div class="card">
-        <div class="card-body">
-          <div class="mt-2">
-            <h3 class="border-bottom">Total Sales 24H <span class="float-end"><%= @purchase_24h[:total_count] %></span></h3>
-            <% (@purchase_24h[:data] || []).each do |nft, count| %>
-              <h5 class="border-bottom pb-2"><%= nft %><span class="float-end"><%= count %></span></h5>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="mb-5">
-      <div class="card">
-        <div class="card-body">
-          <div class="mt-2">
+            <h5 class="border-bottom pb-2">Total Owners <span class="float-end"><%= "#{@nft.total_owners.size} (#{@nft.bchp}%)" %></span></h5>
+            <h5 class="border-bottom pb-2">Total Sales 24H <span class="float-end"><%= get_sales_info(@purchase_24h) %></span></h5>
             <% result = fetch_purchase_history_data(@purchase_7d) %>
-            <h3 class="border-bottom">Total Sales 7D <span class="float-end"><%= result[:total_count] %></span></h3>
-            <% result[:data].each do |nft, count| %>
-              <h5 class="border-bottom pb-2"><%= nft %><span class="float-end"><%= count %></span></h5>
-            <% end %>
+            <h5>Total Sales 7D <span class="float-end"><%= get_sales_info(result) %></span></h5>
           </div>
         </div>
       </div>

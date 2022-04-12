@@ -60,10 +60,14 @@ module NftsHelper
   def fetch_purchase_history_data(data)
     result = {total_count: 0, data: []}
     result[:total_count] = data.sum{|d| d[:total_count]}
-    result[:data] = data.map{|x| x[:data]}.flatten.reduce({}) do |sums, location|
-      sums.merge(location) { |_, a, b| a + b }
-    end
+    result[:bch_count] = data.sum{|d| d[:bch_count]}
 
     result
+  end
+
+  def get_sales_info(data)
+    total_count = data[:total_count].to_f
+    bchp = total_count == 0 ? 0 : data[:bch_count] / total_count
+    "#{total_count} (#{bchp.to_f.round(2)}%)"
   end
 end

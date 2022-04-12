@@ -36,8 +36,19 @@
                   <h4 id="login_address"></h4>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
+                  <% if is_admin? %>
+                    <li>
+                      <%= link_to user_nfts_path(current_user), class: "dropdown-item" do %>
+                        <i class="ai-user fs-base me-2"></i>
+                        <span>My NFTs</span>
+                      <% end %>
+                    </li>
+                  <% end %>
                   <li>
-                    <%= link_to "Log out", "#", class: "dropdown-item", id: "logoutBtn" %>
+                    <%= link_to "#", class: "dropdown-item", id: "logoutBtn" do %>
+                      <i class="ai-log-out fs-base me-2"></i>
+                      <span>Log out</span>
+                    <% end %>
                   </li>
                 </ul>
               </div>

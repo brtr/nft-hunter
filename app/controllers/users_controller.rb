@@ -11,4 +11,9 @@ class UsersController < ApplicationController
 
     render json: {success: true}
   end
+
+  def nfts
+    user = User.find_by id: session[:user_id]
+    @nfts = user.nfts_views
+  end
 end

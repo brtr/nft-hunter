@@ -9,5 +9,5 @@ class NftsView < ApplicationRecord
   has_many :target_nft_owner_histories, primary_key: :nft_id, foreign_key: :nft_id
   belongs_to :nft
 
-  delegate :user_id, :bchp, to: :nft
+  delegate :user_id, :bchp, :total_owners, to: :nft
 end
