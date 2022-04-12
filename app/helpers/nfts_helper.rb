@@ -68,6 +68,6 @@ module NftsHelper
   def get_sales_info(data)
     total_count = data[:total_count].to_f
     bchp = total_count == 0 ? 0 : data[:bch_count] / total_count
-    "#{total_count} (#{bchp.to_f.round(2)}%)"
+    "#{total_count} (#{(bchp * 100).to_f.round(2)}%)"
   end
 end

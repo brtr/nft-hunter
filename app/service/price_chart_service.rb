@@ -1,11 +1,10 @@
 class PriceChartService
-  attr_reader :start_date, :end_date, :nft_id, :labels
+  attr_reader :start_date, :end_date, :nft_id
 
   def initialize(start_date: nil, end_date: nil, nft_id: nil)
     @start_date = start_date
     @end_date = end_date || Date.yesterday
     @nft_id = nft_id
-    @labels = NftOwnerService.target_nfts.pluck(:name)
   end
 
   def get_price_data
@@ -18,17 +17,17 @@ class PriceChartService
   end
 
   def get_holding_data
-    result = {labels: labels, data: {}}
+    result = {}
     TargetNftOwnerHistory.holding.where(event_date: [start_date..end_date], nft_id: nft_id).group_by(&:event_date).sort_by{|date, records| date}.each do |date, records|
-      result[:data].merge!({date => records.map{|x| {bch_count: x.data[:bch_count], date: date}}})
+      result.merge!({date => records.map{|x| {bch_count: x.data[:bch_count], date: date}}})
     end
     result
   end
 
   def get_purchase_data
-    result = {labels: labels, data: {}}
+    result = {}
     TargetNftOwnerHistory.purchase.where(event_date: [start_date..end_date], nft_id: nft_id).group_by(&:event_date).sort_by{|date, records| date}.each do |date, records|
-      result[:data].merge!({date => records.map{|x| {bch_count: x.data[:bch_count], date: date}}})
+      result.merge!({date => records.map{|x| {bch_count: x.data[:bch_count], date: date}}})
     end
     result
   end

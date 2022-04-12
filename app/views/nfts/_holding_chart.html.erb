@@ -4,43 +4,27 @@
 
 <script>
 document.addEventListener('turbolinks:load', () => {
-  const all_colors = [
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(255, 159, 64, 1)',
-  ];
-
-  const get_color = function() {
-    num = Math.floor(Math.random() * all_colors.length);
-    return all_colors[num]
-  }
-
   var canvas = document.getElementById('holdingChart');
   if(canvas){
     const ctx = canvas.getContext('2d');
     const chart_data = JSON.parse(ctx.canvas.dataset.data)
-    const labels = chart_data.labels
-    const holding_data = Object.values(chart_data.data)
+    const holding_data = Object.values(chart_data)
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: Object.keys(chart_data.data),
-        datasets: labels.map(function(a) {
-          return {
-              label: a,
-              data: holding_data.map(d => {
-                const count = d.map(x => {
-                  n = x[a].owners_count
-                  return n > 0 ? n : 0
-                });
-
-                return count[0];
-              }),
-              tension: 0.4,
-              backgroundColor: [get_color()],
-              borderColor: [get_color()]
-        }})
+        labels: Object.keys(chart_data),
+        datasets: [
+          {
+            label: "Blue Chip Holder Count",
+            data: holding_data.map(i => {
+              return i[0].bch_count
+            }),
+            tension: 0.4,
+            borderColor: ['rgba(255, 99, 132, 1)'],
+            backgroundColor: ['rgba(54, 162, 235, 1)'],
+            yAxisID: 'y'
+          }
+        ],
       },
       options: {
         scales: {
@@ -64,9 +48,14 @@ document.addEventListener('turbolinks:load', () => {
                 return ''
               },
               footer: function(context) {
-                data = context[0];
-
-                return `${data.dataset.label}: ${data.formattedValue}`
+                data = holding_data.filter(function(x) { return x[0]["date"] == context[0].label})
+                if(data.length > 0){
+                  i = data[0]
+                  bch_count = "BCH Count: " + i[0].bch_count
+                  return [bch_count]
+                } else {
+                  return context.label
+                }
               }
             }
           }
