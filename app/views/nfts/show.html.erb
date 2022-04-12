@@ -19,7 +19,7 @@
         <div class="card-body">
           <div class="mt-2">
             <h5 class="border-bottom pb-2">Floor Price(24h) <span class="float-end"><%= "#{@nft.eth_floor_price_24h.to_f} ETH" %>(<span class="text-<%= change_text_color(@nft.variation.to_f) %>"><%= "#{@nft.variation.to_f}%" %></span>)</span></h5>
-            <h5 class="border-bottom pb-2">Volume(24h) <span class="float-end"><%= "#{@nft.eth_volume_24h.to_f} ETH" %></span></h5>
+            <h5 class="border-bottom pb-2">Volume(24h) <span class="float-end"><%= "#{@nft.eth_volume_24h.to_f.round(4)} ETH" %></span></h5>
             <h5>Sales(24h) <span class="float-end"><%= @nft.sales_24h %></span></h5>
           </div>
         </div>
