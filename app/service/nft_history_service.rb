@@ -19,8 +19,13 @@ class NftHistoryService
           nft.update(total_supply: asset["totalSupply"]) unless except_nfts.include?(slug)
           sales_data = asset["salesData"]
           h = nft.nft_histories.where(event_date: Date.yesterday).first_or_create
+          bchp_nft_ids = Nft.where(is_marked: true).pluck(:id) - [nft.id]
+          bchp_owner_ids = OwnerNft.where(event_date: Date.yesterday, nft_id: bchp_nft_ids).pluck(:owner_id).uniq
+          bchp_owners = nft.total_owners.where(owner_id: bchp_owner_ids)
+          bchp = nft.total_owners.size == 0 ? 0 : (bchp_owners.size / nft.total_owners.size.to_f) * 100
+
           h.update(floor_price: asset["floorPriceUSD"], eth_floor_price: asset["floorPriceETH"], sales: sales_data["numberSales24h"],
-                  volume: sales_data["sales24hVolumeUSD"], eth_volume: sales_data["sales24hVolumeETH"])
+                  volume: sales_data["sales24hVolumeUSD"], eth_volume: sales_data["sales24hVolumeETH"], bchp: bchp)
         end
 
         update_data_rank

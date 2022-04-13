@@ -18,4 +18,5 @@ Rails.application.routes.draw do
   post 'login', to: "users#login", as: :login
   post 'logout', to: "users#logout", as: :logout
   get '/users/:id/nfts', to: "users#nfts", as: :user_nfts
+  get '/extensions', to: "home#extensions", as: :extensions
 end

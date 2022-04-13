@@ -28,15 +28,15 @@
     <div id="chart">
       <h2 class="mt-3">Floor Price Chart</h2>
       <div class="text-right mt-5">
-        <%= form_tag nft_path, id: "period_targets", method: "GET" do %>
+        <%= form_tag nft_path, class: "period_targets", method: "GET" do %>
           <div class="col-12">
             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-              <%= radio_button_tag :period, "week", params[:period] == "week", class: "btn-check", id: "btnradio1" %>
-              <label class="btn btn-outline-primary week" for="btnradio1">Week</label>
-              <%= radio_button_tag :period, "month", params[:period] == "month", class: "btn-check", id: "btnradio2" %>
-              <label class="btn btn-outline-primary month" for="btnradio2">Month</label>
-              <%= radio_button_tag :period, "year", params[:period] == "year", class: "btn-check", id: "btnradio3" %>
-              <label class="btn btn-outline-primary year" for="btnradio3">Year</label>
+              <%= radio_button_tag :price_period, "week", params[:price_period] == "week", class: "btn-check", id: "btnradio1price" %>
+              <label class="btn btn-outline-primary week" for="btnradio1price">Week</label>
+              <%= radio_button_tag :price_period, "month", params[:price_period] == "month", class: "btn-check", id: "btnradio2price" %>
+              <label class="btn btn-outline-primary month" for="btnradio2price">Month</label>
+              <%= radio_button_tag :price_period, "year", params[:price_period] == "year", class: "btn-check", id: "btnradio3price" %>
+              <label class="btn btn-outline-primary year" for="btnradio3price">Year</label>
             </div>
           </div>
         <% end %>
@@ -47,15 +47,15 @@
      <div id="chart">
       <h2 class="mt-3">Holding Chart</h2>
       <div class="text-right mt-5">
-        <%= form_tag nft_path, id: "period_targets", method: "GET" do %>
+        <%= form_tag nft_path, class: "period_targets", method: "GET" do %>
           <div class="col-12">
             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-              <%= radio_button_tag :period, "week", params[:period] == "week", class: "btn-check", id: "btnradio1" %>
-              <label class="btn btn-outline-primary week" for="btnradio1">Week</label>
-              <%= radio_button_tag :period, "month", params[:period] == "month", class: "btn-check", id: "btnradio2" %>
-              <label class="btn btn-outline-primary month" for="btnradio2">Month</label>
-              <%= radio_button_tag :period, "year", params[:period] == "year", class: "btn-check", id: "btnradio3" %>
-              <label class="btn btn-outline-primary year" for="btnradio3">Year</label>
+              <%= radio_button_tag :holding_period, "week", params[:holding_period] == "week", class: "btn-check", id: "btnradio1holding" %>
+              <label class="btn btn-outline-primary week" for="btnradio1holding">Week</label>
+              <%= radio_button_tag :holding_period, "month", params[:holding_period] == "month", class: "btn-check", id: "btnradio2holding" %>
+              <label class="btn btn-outline-primary month" for="btnradio2holding">Month</label>
+              <%= radio_button_tag :holding_period, "year", params[:holding_period] == "year", class: "btn-check", id: "btnradio3holding" %>
+              <label class="btn btn-outline-primary year" for="btnradio3holding">Year</label>
             </div>
           </div>
         <% end %>
@@ -66,15 +66,15 @@
     <div id="chart">
       <h2 class="mt-3">Purchase Chart</h2>
       <div class="text-right mt-5">
-        <%= form_tag nft_path, id: "period_targets", method: "GET" do %>
+        <%= form_tag nft_path, class: "period_targets", method: "GET" do %>
           <div class="col-12">
             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-              <%= radio_button_tag :period, "week", params[:period] == "week", class: "btn-check", id: "btnradio1" %>
-              <label class="btn btn-outline-primary week" for="btnradio1">Week</label>
-              <%= radio_button_tag :period, "month", params[:period] == "month", class: "btn-check", id: "btnradio2" %>
-              <label class="btn btn-outline-primary month" for="btnradio2">Month</label>
-              <%= radio_button_tag :period, "year", params[:period] == "year", class: "btn-check", id: "btnradio3" %>
-              <label class="btn btn-outline-primary year" for="btnradio3">Year</label>
+              <%= radio_button_tag :purchase_period, "week", params[:purchase_period] == "week", class: "btn-check", id: "btnradio1purchase" %>
+              <label class="btn btn-outline-primary week" for="btnradio1purchase">Week</label>
+              <%= radio_button_tag :purchase_period, "month", params[:purchase_period] == "month", class: "btn-check", id: "btnradio2purchase" %>
+              <label class="btn btn-outline-primary month" for="btnradio2purchase">Month</label>
+              <%= radio_button_tag :purchase_period, "year", params[:purchase_period] == "year", class: "btn-check", id: "btnradio3purchase" %>
+              <label class="btn btn-outline-primary year" for="btnradio3purchase">Year</label>
             </div>
           </div>
         <% end %>
@@ -89,9 +89,9 @@
         <div class="card-body">
           <div class="mt-2">
             <h5 class="border-bottom pb-2">Total Owners <span class="float-end"><%= "#{@nft.total_owners.size} (#{@nft.bchp}%)" %></span></h5>
-            <h5 class="border-bottom pb-2">Total Sales 24H <span class="float-end"><%= get_sales_info(@purchase_24h) %></span></h5>
+            <h5 class="border-bottom pb-2">Total Purchase 24H <span class="float-end"><%= get_sales_info(@purchase_24h) %></span></h5>
             <% result = fetch_purchase_history_data(@purchase_7d) %>
-            <h5>Total Sales 7D <span class="float-end"><%= get_sales_info(result) %></span></h5>
+            <h5>Total Purchase 7D <span class="float-end"><%= get_sales_info(result) %></span></h5>
           </div>
         </div>
       </div>

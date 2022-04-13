@@ -7,16 +7,7 @@ class NftsController < ApplicationController
     sort_by = params[:sort_by] || "eth_volume_24h"
     @sort = params[:sort] == "desc" ? "asc" : "desc"
     nfts = NftsView.includes(:nft)
-    if sort_by == "bchp"
-      if @sort == "desc"
-        @nfts = nfts.sort_by{|n| n.bchp}
-      else
-        @nfts = nfts.sort_by{|n| n.bchp}.reverse
-      end
-      @nfts = Kaminari.paginate_array(@nfts).page(@page).per(50)
-    else
-      @nfts = nfts.order("#{sort_by} #{@sort}").page(@page).per(50)
-    end
+    @nfts = nfts.order("#{sort_by} #{@sort}").page(@page).per(50)
   end
 
   def show
@@ -25,9 +16,9 @@ class NftsController < ApplicationController
     latest_histories = @nft.target_nft_owner_histories.last_day
     @purchase_24h = latest_histories.purchase.take.data rescue {}
     @purchase_7d = @nft.target_nft_owner_histories.purchase.where(event_date: [date - 7.days..date]).map(&:data)
-    @price_data = PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_price_data
-    @holding_data = PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_holding_data
-    @purchase_data = PriceChartService.new(start_date: period_date, nft_id: @nft.nft_id).get_purchase_data
+    @price_data = PriceChartService.new(start_date: period_date("price_period"), nft_id: @nft.nft_id).get_price_data
+    @holding_data = PriceChartService.new(start_date: period_date("holding_period"), nft_id: @nft.nft_id).get_holding_data
+    @purchase_data = PriceChartService.new(start_date: period_date("purchase_period"), nft_id: @nft.nft_id).get_purchase_data
   end
 
   def new
@@ -85,8 +76,8 @@ class NftsController < ApplicationController
     @nft = Nft.find_by id: params[:id]
   end
 
-  def period_date
-    case params[:period]
+  def period_date(period)
+    case period
     when "month" then Date.today.last_month.to_date
     when "year" then Date.today.last_year.to_date
     else 7.days.ago.to_date

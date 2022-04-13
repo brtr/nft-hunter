@@ -7,6 +7,7 @@ class NftOwnerService
 
       result = {total_count: owners.size, bch_count: []}
       target_nfts.each do |nft|
+        next if nft.id == nft_id
         target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).pluck(:owner_id)
         data = owners.select{|o| target_owners.include?(o.owner_id)}
 
@@ -30,6 +31,7 @@ class NftOwnerService
       result = {total_count: owners.size, bch_count: []}
 
       target_nfts.each do |nft|
+        next if nft.id == nft_id
         target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).map{|o| o.owner_id}.uniq
         data = owners.select{|o| target_owners.include?(o.owner_id)}
 
@@ -109,24 +111,21 @@ class NftOwnerService
       end_at = DateTime.now
       start_at = (end_at - 1.month).at_beginning_of_day
 
-      median = $redis.get("nft_holding_time_median_#{nft_id}")
-      unless median
-        result = {}
-        NftTrade.where(nft_id: nft_id, trade_time: [start_at..end_at]).order(trade_time: :asc).group_by{|t| t.token_id}.each do |token_id, trades|
-          trades.each do |trade|
-            result[trade.buyer] ||= trade.trade_time
-            if result.keys.include?(trade.seller)
-              result[trade.seller] = trade.trade_time - result[trade.seller]
-            end
+      result = {}
+      NftTrade.where(nft_id: nft_id, trade_time: [start_at..end_at]).order(trade_time: :asc).group_by{|t| t.token_id}.each do |token_id, trades|
+        trades.each do |trade|
+          result[trade.buyer] ||= trade.trade_time
+          if result.keys.include?(trade.seller)
+            result[trade.seller] = trade.trade_time - result[trade.seller]
           end
         end
-
-        values = result.values.select{|v| v.is_a?(Float)}
-        median = values.size == 0 ? 0 : cal_median(values)
-
-        $redis.set("nft_holding_time_median_#{nft_id}", median, ex: 20.minutes)
       end
-      (median.to_f / 86400).round(2)
+
+      values = result.values.select{|v| v.is_a?(Float)}
+      median = values.size == 0 ? 0 : cal_median(values)
+
+      h = NftHistory.where(nft_id: nft_id, event_date: Date.today).first_or_create
+      h.update(median: (median.to_f / 86400).round(2))
     end
 
     private

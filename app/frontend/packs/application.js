@@ -70,7 +70,7 @@ $(document).on('turbolinks:load', function() {
     $(function() {
         $('[data-bs-toggle="tooltip"]').tooltip({html: true});
 
-        $("input[name='period']").on("click", function() {
+        $(".period_targets input").on("click", function() {
             this.form.submit();
         })
 

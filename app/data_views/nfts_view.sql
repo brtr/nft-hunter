@@ -9,7 +9,9 @@ CREATE MATERIALIZED VIEW nfts_view AS
         volume,
         eth_volume,
         sales,
-        eth_volume_rank
+        eth_volume_rank,
+        bchp,
+        median
       FROM nft_histories
       WHERE event_date = CURRENT_DATE - interval '1 day'
     ), histories_24h AS (
@@ -51,6 +53,8 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.listed_ratio,
       ROUND(n.variation, 2) as variation,
       h1.sales as sales_24h,
+      h1.bchp as bchp,
+      h1.median as median,
       ROUND(h1.floor_price, 2) as floor_price_24h,
       h1.eth_floor_price as eth_floor_price_24h,
       h1.volume as volume_24h,

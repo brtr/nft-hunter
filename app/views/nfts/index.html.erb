@@ -9,10 +9,12 @@
         <th scope="col">Rank 24H</th>
         <th scope="col">Rank 3D</th>
         <th scope="col">Floor Price</th>
-        <th scope="col">
+        <th scope="col" data-bs-toggle="tooltip" title="Blue chip holder percentage: number of holders that have atleast one other blue chip project/ Number of total holders">
           <%= link_to "BCHP", nfts_path(sort_by: "bchp", sort: @sort) %>
         </th>
-        <th scope="col">Holding Median</th>
+        <th scope="col">
+          <%= link_to "Holding Median", nfts_path(sort_by: "median", sort: @sort) %>
+        </th>
         <th scope="col">
           <%= link_to "24h", nfts_path(sort_by: "variation", sort: @sort) %>
         </th>
@@ -51,7 +53,7 @@
             <% end if nft.opensea_url %>
           </td>
           <td style="width: 6%"><%= "#{nft.bchp.to_f.round(2)} %" %></td>
-          <td><%= "#{NftOwnerService.holding_time_median(nft.id)} Days" %></td>
+          <td><%= "#{nft.median.to_f.round(2)} Days" %></td>
           <td style="width: 3%" class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
           <td style="width: 8%"><%= "#{nft.eth_volume_24h.to_f.round(2)} ETH" %></td>
           <td style="width: 3%"><%= nft.sales_24h %></td>
