@@ -28,13 +28,13 @@
           <td><%= get_purchase_data(nft, @data)[:token_ratio] %></td>
           <td><%= get_purchase_data(nft, @data)[:owners_count] %></td>
           <td>
-            <%= "#{nft.eth_floor_price_24h.to_f.round(2)} ETH" %>
+            <%= "#{decimal_format(nft.eth_floor_price_24h)} ETH" %>
             <%= link_to nft.opensea_url, target: "_blank" do %>
               <i class="ai-compass fs-lg me-2"></i>
             <% end if nft.opensea_url %>
           </td>
           <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
-          <td><%= "#{nft.eth_volume_24h.to_f.round(2)} ETH" %></td>
+          <td><%= "#{decimal_format(nft.eth_volume_24h)} ETH" %></td>
           <td><%= nft.sales_24h %></td>
           <td><%= listed_and_supply_radio(nft.total_supply, nft.listed_ratio) %></td>
           <td><%= "#{nft.eth_floor_cap} ETH" %></td>

@@ -30,8 +30,7 @@ class NftsController < ApplicationController
     if nft.address.match(/^0x[a-fA-F0-9]{40}$/)
       nft.user_id = session[:user_id]
       nft.save
-      NftHistoryService.generate_nfts_view
-      redirect_to nfts_path, notice: "Add NFT successful!"
+      redirect_to user_nfts_path(current_user), notice: "Add NFT successful!"
     else
       flash[:alert] = "Invalid address!"
       @nft = Nft.new

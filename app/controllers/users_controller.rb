@@ -14,6 +14,10 @@ class UsersController < ApplicationController
 
   def nfts
     user = User.find_by id: session[:user_id]
-    @nfts = user.nfts_views
+    sort_by = params[:sort_by] || "eth_volume_24h"
+    @sort = params[:sort] == "desc" ? "asc" : "desc"
+    nfts = user.nfts_views
+    @nfts = nfts.sort_by{|n| n.send(sort_by)}
+    @nfts = @nfts.reverse if @sort == "asc"
   end
 end

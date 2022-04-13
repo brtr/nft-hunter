@@ -12,4 +12,8 @@ module ApplicationHelper
     address[6...-4] = "...."
     address
   end
+
+  def decimal_format(data)
+    data.to_f.round(2)
+  end
 end
