@@ -51,7 +51,7 @@
           <td style="width: 3%" class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
           <td style="width: 8%"><%= "#{decimal_format(nft.eth_volume_24h)} ETH" %></td>
           <td style="width: 3%"><%= nft.sales_24h %></td>
-          <td><%= listed_and_supply_radio(nft.total_supply, nft.listed_ratio) %></td>
+          <td><%= listed_and_supply_radio(nft) %></td>
           <td><%= "#{nft.eth_floor_cap} ETH" %></td>
           <% if current_user && nft.user_id == current_user.id %>
             <td style="width: 6%">

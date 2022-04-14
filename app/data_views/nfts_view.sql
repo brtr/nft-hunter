@@ -50,6 +50,7 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.total_supply,
       n.floor_cap,
       n.eth_floor_cap,
+      n.listed,
       n.listed_ratio,
       ROUND(n.variation, 2) as variation,
       h1.sales as sales_24h,

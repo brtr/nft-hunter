@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_13_062830) do
+ActiveRecord::Schema.define(version: 2022_04_14_082505) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -124,6 +124,7 @@ ActiveRecord::Schema.define(version: 2022_04_13_062830) do
     t.decimal "eth_floor_cap"
     t.string "opensea_slug"
     t.integer "user_id"
+    t.decimal "listed"
   end
 
   create_table "owner_nfts", force: :cascade do |t|

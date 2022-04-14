@@ -9,9 +9,14 @@ module NftsHelper
     end
   end
 
-  def listed_and_supply_radio(supply, listed_ratio)
-    listed = supply * listed_ratio / 100 rescue 0
-    "#{listed.to_i} / #{supply.to_i} (#{listed_ratio.to_f.round(2)}%)"
+  def listed_and_supply_radio(nft)
+    if nft.listed.present? && nft.listed > 0
+      ratio =  nft.listed.to_f / nft.total_supply * 100
+      "#{nft.listed}/#{nft.total_supply} (#{ratio.to_f.round(2)}%) "
+    else
+      listed = nft.total_supply * nft.listed_ratio / 100 rescue 0
+      "#{listed.to_i} / #{nft.total_supply.to_i} (#{nft.listed_ratio.to_f.round(2)}%)"
+    end
   end
 
   def get_chain_name(chain_id)

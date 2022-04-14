@@ -36,7 +36,7 @@
           <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
           <td><%= "#{decimal_format(nft.eth_volume_24h)} ETH" %></td>
           <td><%= nft.sales_24h %></td>
-          <td><%= listed_and_supply_radio(nft.total_supply, nft.listed_ratio) %></td>
+          <td><%= listed_and_supply_radio(nft) %></td>
           <td><%= "#{nft.eth_floor_cap} ETH" %></td>
         </tr>
       <% end %>

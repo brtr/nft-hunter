@@ -16,9 +16,11 @@ class NftHistoryService
           nfts.push(slug)
           nft = Nft.where(slug: slug, chain_id: 1).first
           next if slug.blank? || nft.blank?
-          nft.update(listed_ratio: asset["listedRatio"], floor_cap: asset["floorCapUSD"], eth_floor_cap: asset["floorCapETH"],
-                    variation: asset["variationUSD"], opensea_url: asset["url"], opensea_slug: slug)
           nft.update(total_supply: asset["totalSupply"]) unless except_nfts.include?(slug)
+          listed_ratio = asset["listedRatio"]
+          listed = nft.total_supply / listed_ratio
+          nft.update(listed_ratio: listed_ratio, listed: listed, floor_cap: asset["floorCapUSD"], eth_floor_cap: asset["floorCapETH"],
+                    variation: asset["variationUSD"], opensea_url: asset["url"], opensea_slug: slug)
           sales_data = asset["salesData"]
           h = nft.nft_histories.where(event_date: Date.yesterday).first_or_create
           bchp = cal_bchp(nft)
@@ -82,6 +84,14 @@ class NftHistoryService
       bchp_owner_ids = OwnerNft.where(event_date: Date.yesterday, nft_id: bchp_nft_ids).pluck(:owner_id).uniq
       bchp_owners = nft.total_owners.where(owner_id: bchp_owner_ids)
       bchp = nft.total_owners.size == 0 ? 0 : (bchp_owners.size / nft.total_owners.size.to_f) * 100
+    end
+
+    def get_data_from_trades(nft_id)
+      trades = NftTrade.where(nft_id: nft_id).group_by{|t| t.trade_time.to_date}.sort_by{|k,v| k}
+      trades.each do |date, trades|
+        h = NftHistory.where(nft_id: nft_id, event_date: date).first_or_create
+        h.update(sales: trades.size)
+      end
     end
   end
 end
