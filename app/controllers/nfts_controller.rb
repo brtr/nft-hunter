@@ -6,7 +6,8 @@ class NftsController < ApplicationController
     @page = params[:page].to_i || 1
     sort_by = params[:sort_by] || "eth_volume_24h"
     @sort = params[:sort] == "desc" ? "asc" : "desc"
-    nfts = NftsView.includes(:nft)
+    @q = NftsView.includes(:nft).ransack(params[:q])
+    nfts = @q.result
     @nfts = nfts.order("#{sort_by} #{@sort}").page(@page).per(50)
   end
 

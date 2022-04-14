@@ -7,7 +7,7 @@
 @import url("https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700&display=swap");
 @font-face {
   font-family: "around-icons";
-  src: url("around-icons.ttf") format("truetype"), url("around-icons.woff") format("woff"), url("/around-icons.svg?enmnv5#around-icons") format("svg");
+  src: url("../fonts/around-icons.ttf?enmnv5") format("truetype"), url("../fonts/around-icons.woff?enmnv5") format("woff"), url("../fonts/around-icons.svg?enmnv5#around-icons") format("svg");
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -20501,7 +20501,6 @@ _:-ms-lang(x), .jarallax .jarallax-img {
     left: 0;
     width: 40%;
     height: 100%;
-    background-color: #f7f7fc;
     content: "";
   }
   .sidebar-enabled .content {
@@ -20520,9 +20519,10 @@ _:-ms-lang(x), .jarallax .jarallax-img {
   }
 
   .sidebar {
-    position: relative;
+    position: fixed;
     background-color: #f7f7fc;
     z-index: 5;
+    right: 0;
   }
 
   .sidebar-toggle {
