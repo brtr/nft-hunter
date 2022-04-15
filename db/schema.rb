@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_14_082505) do
+ActiveRecord::Schema.define(version: 2022_04_15_025327) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -55,6 +55,7 @@ ActiveRecord::Schema.define(version: 2022_04_14_082505) do
     t.decimal "volume_rank_3d"
     t.decimal "bchp"
     t.decimal "median"
+    t.decimal "listed"
     t.index ["holding_rank_snap_shot_id", "nft_id"], name: "index_holding_rank_snap_shot_id_and_nft_id", unique: true
     t.index ["holding_rank_snap_shot_id"], name: "index_holding_rank_snap_shot_views_on_holding_rank_snap_shot_id"
   end
