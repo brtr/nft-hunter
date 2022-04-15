@@ -29,28 +29,6 @@ class Nft < ApplicationRecord
     end
   end
 
-  def fetch_covalent_histories
-    end_date = Date.today.strftime("%Y-%m-%d")
-    start_date = (Date.today - 1.year).strftime("%Y-%m-%d")
-    response = URI.open("https://api.covalenthq.com/v1/1/nft_market/collection/#{address}/?quote-currency=ETH&from=#{start_date}&to=#{end_date}&key=ckey_docs", {read_timeout: 20}).read rescue nil
-    if response
-      data = JSON.parse(response)
-      items = data["data"]["items"]
-      item = items.first
-      self.update(chain_id: 1, symbol: item["collection_ticker_symbol"], logo: item["first_nft_image"])
-      if items.any?
-        items.each do |item|
-          h = nft_histories.where(event_date: item["opening_date"]).first_or_create
-          h.update(eth_floor_price: item["floor_price_quote_7d"], eth_volume: item["volume_quote_day"], sales: item["unique_token_ids_sold_count_day"])
-        end
-      else
-        puts "Fetch covalent histories Error: #{name} does not have history data!"
-      end
-    else
-      puts "Fetch covalent histories Error: #{name} can't fetch histories!"
-    end
-  end
-
   def fetch_owners(mode: "manual", cursor: nil, date: Date.today)
     return unless address
     begin

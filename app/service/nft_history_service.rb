@@ -66,19 +66,6 @@ class NftHistoryService
       end
     end
 
-    def get_floor_price_from_moralis(nft)
-      url = "https://deep-index.moralis.io/api/v2/nft/#{nft.address}/lowestprice?chain=eth&days=1&marketplace=opensea"
-      response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 10}).read rescue nil
-      if response
-        data = JSON.parse(response)
-        price = data["price"].to_f / 10**18
-        h = nft.nft_histories.where(event_date: Date.yesterday).first_or_create
-        h.update(eth_floor_price: price.to_f)
-      end
-
-      generate_nfts_view
-    end
-
     def cal_bchp(nft)
       bchp_nft_ids = Nft.where(is_marked: true).pluck(:id) - [nft.id]
       bchp_owner_ids = OwnerNft.where(event_date: Date.yesterday, nft_id: bchp_nft_ids).pluck(:owner_id).uniq

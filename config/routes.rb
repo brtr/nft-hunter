@@ -11,6 +11,7 @@ Rails.application.routes.draw do
     get :purchase_rank, on: :collection
     get :holding_rank, on: :collection
     get :sync_data, on: :member
+    get :bch_list, on: :member
   end
 
   resources :holding_rank_snap_shots, only: [:index, :show]

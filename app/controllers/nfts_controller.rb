@@ -1,5 +1,5 @@
 class NftsController < ApplicationController
-  before_action :get_nft, only: [:edit, :update, :sync_data]
+  before_action :get_nft, only: [:edit, :update, :sync_data, :bch_list]
 
   def index
     @page_index = 0
@@ -57,6 +57,11 @@ class NftsController < ApplicationController
     FetchSingleNftDataJob.perform_later(@nft.id)
 
     redirect_to nfts_path, notice: "Data is syncing, please refresh the page later!"
+  end
+
+  def bch_list
+    @data = @nft.target_nft_owner_histories.last_day.holding.take.data
+    @result = @data[:data].sort_by{|k, v| v[:owners_ratio]}.reverse rescue {}
   end
 
   def purchase_rank

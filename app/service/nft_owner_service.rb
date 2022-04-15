@@ -16,10 +16,11 @@ class NftOwnerService
           result[:bch_count].push(data.pluck(:owner_id).compact)
           result[:data].merge!(
             {
-              nft.name => {
+              nft.slug => {
                 tokens_count: data.sum(&:amount),
                 owners_count: data.count,
-                owners_ratio: (ratio * 100).round(2)
+                owners_ratio: (ratio * 100).round(2),
+                logo: nft.logo
               }
             }
           )
