@@ -114,15 +114,18 @@ class Nft < ApplicationRecord
     end
   end
 
-  def sync_moralis_trades(mode="manual", cursor=nil)
+  def sync_moralis_trades(mode="manual", offset=nil, date=Date.yesterday)
     return unless address
-    today = Date.today
-    date = Date.yesterday
-    from_date = nft_trades.where(trade_time: [date..today]).size > 0 ? date.strftime("%Y-%m-%d") : (today - 1.month).strftime("%Y-%m-%d")
+    if offset.present?
+      from_date = date
+    else
+      today = Date.today
+      from_date = nft_trades.where(trade_time: [date..today]).size > 0 ? date.strftime("%Y-%m-%d") : (today - 1.month).strftime("%Y-%m-%d")
+    end
 
     begin
       url = "https://deep-index.moralis.io/api/v2/nft/#{address}/trades?chain=eth&marketplace=opensea&from_date=#{from_date}"
-      url += "&cursor=#{cursor}" if cursor
+      url += "&offset=#{offset}" if offset
       response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read
       if response
         data = JSON.parse(response)
@@ -138,10 +141,10 @@ class Nft < ApplicationRecord
         end
       end
 
-      page = data["page"].to_i == 0 ? 1 : data["page"].to_i
-      if data["cursor"].present? && data["total"] > data["page_size"].to_i * page
+      offset = data["page_size"].to_i * data["page"].to_i + 501
+      if data["total"] > offset
         sleep 3
-        sync_moralis_trades(mode, data["cursor"])
+        sync_moralis_trades(mode, offset, from_date)
       end
     rescue => e
       FetchDataLog.create(fetch_type: mode, source: "Sync Moralis", url: url, error_msgs: e, event_time: DateTime.now)

@@ -5,13 +5,25 @@ class NftOwnerService
     def get_target_owners_ratio(nft_id, date=Date.yesterday)
       owners = OwnerNft.where(nft_id: nft_id, event_date: date)
 
-      result = {total_count: owners.size, bch_count: []}
+      result = {total_count: owners.size, bch_count: [], data: {}}
       target_nfts.each do |nft|
         next if nft.id == nft_id
         target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).pluck(:owner_id)
         data = owners.select{|o| target_owners.include?(o.owner_id)}
 
-        result[:bch_count].push(data.pluck(:owner_id).compact) if data.any?
+        if data.any?
+          ratio = owners.count == 0 ? 0 : data.count / target_owners.count.to_f
+          result[:bch_count].push(data.pluck(:owner_id).compact)
+          result[:data].merge!(
+            {
+              nft.name => {
+                tokens_count: data.sum(&:amount),
+                owners_count: data.count,
+                owners_ratio: (ratio * 100).round(2)
+              }
+            }
+          )
+        end
       end
       result[:bch_count] = result[:bch_count].flatten.uniq.size
 
@@ -28,7 +40,7 @@ class NftOwnerService
     def get_target_owners_trades(nft_id, date=Date.yesterday)
       trades = NftTrade.where(nft_id: nft_id, trade_time: [date.at_beginning_of_day..date.at_end_of_day])
       owners = OwnerNft.joins(:owner).where(nft_id: nft_id, event_date: date, owner: {address: trades.pluck(:buyer)})
-      result = {total_count: owners.size, bch_count: []}
+      result = {total_count: owners.size, bch_count: [], data: {}}
 
       target_nfts.each do |nft|
         next if nft.id == nft_id

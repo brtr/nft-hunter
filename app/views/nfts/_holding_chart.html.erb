@@ -3,6 +3,13 @@
 </div>
 
 <script>
+function dynamicColors() {
+        var r = Math.floor(Math.random() * 255);
+        var g = Math.floor(Math.random() * 255);
+        var b = Math.floor(Math.random() * 255);
+        return "rgba(" + r + "," + g + "," + b + ", 0.5)";
+    }
+
 document.addEventListener('turbolinks:load', () => {
   var canvas = document.getElementById('holdingChart');
   if(canvas){
@@ -20,9 +27,19 @@ document.addEventListener('turbolinks:load', () => {
               return i[0].bch_count
             }),
             tension: 0.4,
-            borderColor: ['rgba(255, 99, 132, 1)'],
-            backgroundColor: ['rgba(54, 162, 235, 1)'],
+            borderColor: dynamicColors(),
+            backgroundColor: dynamicColors(),
             yAxisID: 'y'
+          },
+          {
+            label: "Floor Price",
+            data: holding_data.map(i => {
+              return i[0].floor_price
+            }),
+            tension: 0.4,
+            borderColor: dynamicColors(),
+            backgroundColor: dynamicColors(),
+            yAxisID: 'y1'
           }
         ],
       },
@@ -35,6 +52,12 @@ document.addEventListener('turbolinks:load', () => {
           },
           y: {
             position: 'left',
+            ticks: {
+              maxTicksLimit: 5
+            },
+          },
+          y1: {
+            position: 'right',
             ticks: {
               maxTicksLimit: 5
             },
@@ -52,7 +75,8 @@ document.addEventListener('turbolinks:load', () => {
                 if(data.length > 0){
                   i = data[0]
                   bch_count = "BCH Count: " + i[0].bch_count
-                  return [bch_count]
+                  floor_price = "Floor Price: " + i[0].floor_price
+                  return [bch_count, floor_price]
                 } else {
                   return context.label
                 }

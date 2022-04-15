@@ -17,9 +17,9 @@ class NftsController < ApplicationController
     latest_histories = @nft.target_nft_owner_histories.last_day
     @purchase_24h = latest_histories.purchase.take.data rescue {}
     @purchase_7d = @nft.target_nft_owner_histories.purchase.where(event_date: [date - 7.days..date]).map(&:data)
-    @price_data = PriceChartService.new(start_date: period_date("price_period"), nft_id: @nft.nft_id).get_price_data
-    @holding_data = PriceChartService.new(start_date: period_date("holding_period"), nft_id: @nft.nft_id).get_holding_data
-    @purchase_data = PriceChartService.new(start_date: period_date("purchase_period"), nft_id: @nft.nft_id).get_purchase_data
+    @price_data = PriceChartService.new(start_date: period_date(params[:price_period]), nft_id: @nft.nft_id).get_price_data
+    @holding_data = PriceChartService.new(start_date: period_date(params[:holding_period]), nft_id: @nft.nft_id).get_holding_data
+    @purchase_data = PriceChartService.new(start_date: period_date(params[:purchase_period]), nft_id: @nft.nft_id).get_purchase_data
   end
 
   def new
