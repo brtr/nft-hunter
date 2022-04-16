@@ -6,10 +6,13 @@ module API
         get :data do
           nft = Nft.where(opensea_slug: params[:slug]).take
           price_data = PriceChartService.new(start_date: 7.days.ago.to_date, nft_id: nft.id).get_price_data rescue {}
-          owners_data = nft.target_nft_owner_histories.last_day.holding.take.data[:data].map{|k, v| {nft: k}.merge(v)} rescue []
+          owner_data = nft.target_nft_owner_histories.last_day.holding.take.data
+          bch_count = owner_data[:bch_count].to_f rescue 0
+          ratio = bch_count / owner_data[:total_count].to_f rescue 0
           data = {
             price_data: price_data,
-            owners_data: owners_data
+            bch_count: bch_count.to_i,
+            bchp: ratio.round(2)
           }
 
           present :result, true

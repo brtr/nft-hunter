@@ -57,7 +57,7 @@
                 </td>
                 <td style="width: 6%"><%= "#{decimal_format(nft.bchp)} %" %></td>
                 <td><%= "#{decimal_format(nft.median)} Days" %></td>
-                <td style="width: 3%" class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{nft.variation.to_f}%" %></td>
+                <td style="width: 3%" class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{decimal_format(nft.variation)}%" %></td>
                 <td style="width: 8%"><%= "#{decimal_format(nft.eth_volume_24h)} ETH" %></td>
                 <td style="width: 3%"><%= nft.sales_24h %></td>
                 <td><%= listed_and_supply_radio(nft) %></td>
