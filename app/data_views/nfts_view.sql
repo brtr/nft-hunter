@@ -52,7 +52,6 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.eth_floor_cap,
       n.listed,
       n.listed_ratio,
-      ROUND(n.variation, 2) as variation,
       h1.sales as sales_24h,
       h1.bchp as bchp,
       h1.median as median,
@@ -63,6 +62,7 @@ CREATE MATERIALIZED VIEW nfts_view AS
       h1.eth_volume_rank as eth_volume_rank,
       h2.eth_volume_rank as eth_volume_rank_24h,
       h3.eth_volume_rank as eth_volume_rank_3d,
+      COALESCE((case when n.variation > 0 then n.variation else (h1.eth_floor_price - h2.eth_floor_price) / NULLIF(h2.eth_floor_price,0) end ), 0) as variation,
       COALESCE((case when h2.eth_volume_rank = 0 then h1.eth_volume_rank else h2.eth_volume_rank - h1.eth_volume_rank end ), 0) as volume_rank_24h,
       COALESCE((case when h3.eth_volume_rank = 0 then h1.eth_volume_rank else h3.eth_volume_rank - h1.eth_volume_rank end ), 0) as volume_rank_3d
       FROM nfts as n

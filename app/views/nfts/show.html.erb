@@ -9,7 +9,7 @@
           <div class="text-end col-8">
             <h4><%= @nft.name.humanize %></h4>
             <h5><%= get_chain_name(@nft.chain_id) %></h5>
-            <h5 class="text-info">Floor Cap: <%= "#{@nft.eth_floor_cap} ETH" %></h5>
+            <h5 class="text-info">Floor Cap: <%= "#{decimal_format(@nft.eth_floor_cap)} ETH" %></h5>
           </div>
         </div>
       </div>
@@ -18,7 +18,7 @@
       <div class="card" style="height: 160px">
         <div class="card-body">
           <div>
-            <h5 class="border-bottom pb-2">Floor Price(24h) <span class="float-end"><%= "#{@nft.eth_floor_price_24h.to_f} ETH" %>(<span class="text-<%= change_text_color(@nft.variation.to_f) %>"><%= "#{@nft.variation.to_f}%" %></span>)</span></h5>
+            <h5 class="border-bottom pb-2">Floor Price(24h) <span class="float-end"><%= "#{decimal_format(@nft.eth_floor_price_24h)} ETH" %>(<span class="text-<%= change_text_color(@nft.variation.to_f) %>"><%= "#{decimal_format(@nft.variation)}%" %></span>)</span></h5>
             <h5 class="border-bottom pb-2">Volume(24h) <span class="float-end"><%= "#{@nft.eth_volume_24h.to_f.round(4)} ETH" %></span></h5>
             <h5>Sales(24h) <span class="float-end"><%= @nft.sales_24h %></span></h5>
           </div>

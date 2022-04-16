@@ -81,7 +81,7 @@ class Nft < ApplicationRecord
         data = JSON.parse(response)
         result = data["stats"]
 
-        self.update(total_supply: result["count"], eth_floor_cap: result["market_cap"])
+        self.update(total_supply: result["count"], eth_floor_cap: result["market_cap"], variation: 0)
         bchp = NftHistoryService.cal_bchp(self)
         h = nft_histories.where(event_date: Date.yesterday).first_or_create
         h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"], bchp: bchp)
