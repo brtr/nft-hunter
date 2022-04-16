@@ -141,6 +141,19 @@ class NftOwnerService
       h.update(median: (median.to_f / 86400).round(2))
     end
 
+    def get_address(address)
+      return address if address.match(/^0x[a-fA-F0-9]{40}$/)
+      url = "https://deep-index.moralis.io/api/v2/resolve/#{address}?currency=eth"
+
+      response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 10}).read rescue nil
+      if response
+        data = JSON.parse(response)
+        return data["address"]
+      else
+        return nil
+      end
+    end
+
     private
     def cal_median(arr)
       arr.sort!

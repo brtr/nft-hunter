@@ -19,6 +19,24 @@ module API
           present :data, data, with: Grape::Presenters::Presenter
           present :status, 200
         end
+
+        desc 'Get bchp from user address'
+        get :bchp do
+          address = NftOwnerService.get_address(params[:address])
+          total_nfts = OwnerNft.joins(:owner).where(owner: {address: address}).pluck(:nft_id).uniq
+          bch = Nft.where(id: total_nfts, is_marked: true).count
+          total = total_nfts.count
+          ratio = total == 0 ? 0 : bch / total.to_f
+
+          data = {
+            total: total_nfts.count,
+            bchp: ratio.round(2)
+          }
+
+          present :result, true
+          present :data, data, with: Grape::Presenters::Presenter
+          present :status, 200
+        end
       end
     end
   end
