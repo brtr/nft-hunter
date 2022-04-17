@@ -9,9 +9,15 @@
               <th scope="col">
                 <%= link_to "Name", nfts_path(sort_by: "Name", sort: @sort) %>
               </th>
-              <th scope="col">Rank 24H</th>
-              <th scope="col">Rank 3D</th>
-              <th scope="col">Floor Price</th>
+              <th scope="col">
+                <%= link_to "Rank 24H", nfts_path(sort_by: "eth_volume_rank_24h", sort: @sort) %>
+              </th>
+              <th scope="col">
+                <%= link_to "Rank 3D", nfts_path(sort_by: "eth_volume_rank_3d", sort: @sort) %>
+              </th>
+              <th scope="col">
+                <%= link_to "Floor Price", nfts_path(sort_by: "eth_floor_price_24h", sort: @sort) %>
+              </th>
               <th scope="col" data-bs-toggle="tooltip" title="Blue chip holder percentage: number of holders that have atleast one other blue chip project/ Number of total holders">
                 <%= link_to "BCHP", nfts_path(sort_by: "bchp", sort: @sort) %>
               </th>
