@@ -3,8 +3,9 @@ require("turbolinks").start();
 require("jquery");
 require("chartkick");
 require("chart.js");
+require("../stylesheets/application.scss");
 
-import "bootstrap/dist/css/bootstrap";
+import 'bootstrap/dist/css/bootstrap';
 import 'bootstrap/dist/js/bootstrap';
 import Chart from 'chart.js/auto';
 
@@ -98,6 +99,14 @@ $(document).on('turbolinks:load', function() {
 
         $(".synBtn").on("click", function(){
             $("#spinner").removeClass("hide");
+        })
+
+        $(".sidebar-toggle").on("click", function(){
+            $("#sidebar").toggleClass("collapsed");
+        })
+
+        $(".js-settings-toggle").on("click", function() {
+            $(".js-settings").toggleClass("open");
         })
     })
 })

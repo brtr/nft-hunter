@@ -14,5 +14,7 @@ environment.plugins.prepend('env',
     'NODE_ENV': JSON.stringify(process.env)
   })
 )
+const devtool = process.env.DEVTOOL;
+if (devtool) environment.config.merge({ devtool });
 
 module.exports = environment
