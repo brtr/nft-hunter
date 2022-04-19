@@ -116,8 +116,8 @@ class NftHistoryService
       result = []
       get_data_from_transfers(mode: mode, result: result)
       if result.any?
-        result = result.flatten.group_by{|r| r["token_address"]}.inject({}){|sum, r| sum.merge({r[0] => r[1].count})}.sort_by{|k,v| v}.reverse.first(5)
-        result.each do |r|
+        result = result.flatten.select{|r| r["value"].to_f > 0 && r["contract_type"] == "ERC721" && r["from_address"] != "0x0000000000000000000000000000000000000000"}
+        result.group_by{|r| r["token_address"]}.inject({}){|sum, r| sum.merge({r[0] => r[1].count})}.sort_by{|k,v| v}.reverse.first(5).each do |r|
           Nft.where(address: r[0]).first_or_create
         end
       else

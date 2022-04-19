@@ -28,32 +28,30 @@ class NftOwnerService
       end
       result[:bch_count] = result[:bch_count].flatten.uniq.size
 
-      TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "holding").first_or_create(data: result)
-    end
-
-    def fetch_trades(address, duration)
-      to_date = Date.today
-      from_date = to_date - duration.to_i.days
-      url = "https://deep-index.moralis.io/api/v2/nft/#{address}/trades?chain=eth&marketplace=opensea&format=decimal&from_date=#{from_date}&to_date=#{to_date}"
-      URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"], read_timeout: 10}).read rescue nil
+      t = TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "holding").first_or_create
+      t.update(data: result)
     end
 
     def get_target_owners_trades(nft_id, date=Date.yesterday)
       trades = NftTrade.where(nft_id: nft_id, trade_time: [date.at_beginning_of_day..date.at_end_of_day])
       owners = OwnerNft.joins(:owner).where(nft_id: nft_id, event_date: date, owner: {address: trades.pluck(:buyer)})
-      result = {total_count: owners.size, bch_count: [], data: {}}
+      result = {total_count: trades.size, bch_count: [], tokens_count: 0}
 
       target_nfts.each do |nft|
         next if nft.id == nft_id
         target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).map{|o| o.owner_id}.uniq
         data = owners.select{|o| target_owners.include?(o.owner_id)}
 
-        result[:bch_count].push(data.pluck(:id).compact) if data.any?
+        if data.any?
+          result[:bch_count].push(data.pluck(:id).compact)
+          result[:tokens_count] += data.sum(&:amount)
+        end
       end
 
       result[:bch_count] = result[:bch_count].flatten.uniq.size
 
-      TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "purchase").first_or_create(data: result)
+      t = TargetNftOwnerHistory.where(nft_id: nft_id, event_date: date, n_type: "purchase").first_or_create
+      t.update(data: result)
     end
 
     def target_nfts
@@ -83,41 +81,26 @@ class NftOwnerService
       result.sort_by{|r| r[:tokens_count]}.reverse.first(10)
     end
 
-    def fetch_target_nft_owners_purchase(duration, date=Date.yesterday)
-      target_owners = get_target_owners(date)
-      Nft.all.each do |nft|
-        fetch_purchase_histories(nft, duration, target_owners)
-      end
+    def get_target_owners(date=Date.yesterday)
+      OwnerNft.includes(:owner).where(event_date: date, nft_id: target_nfts.pluck(:id)).map{|o| [o.owner.address, o.owner_id]}.uniq.to_h
     end
 
-    def fetch_purchase_histories(nft, duration, target_owners)
-      response = fetch_trades(nft.address, duration)
-
-      if response
-        data = JSON.parse(response) rescue nil
-        if data
-          data["result"].each do |r|
-            owners_address = target_owners.keys
-            address = r["buyer_address"]
-
-            if owners_address.include?(address)
-              h = nft.nft_purchase_histories.where(owner_id: target_owners[address], purchase_date: r["block_timestamp"]).first_or_create
-              h.update(amount: r["token_ids"].count)
-            end
-          end
+    def fetch_purchase_histories(nft)
+      target_owners = get_target_owners
+      owners_address = target_owners.keys
+      nft.nft_trades.group_by{|t| [t.buyer, t.trade_time]}.each do |k, v|
+        if owners_address.include?(k[0])
+          h = nft.nft_purchase_histories.where(owner_id: target_owners[k[0]], purchase_date: k[1]).first_or_create
+          h.update(amount: v.count)
         end
       end
-    end
-
-    def get_target_owners(date=Date.yesterday)
-      OwnerNft.includes(:owner).where(event_date: date, nft_id: target_nfts.pluck(:id)).uniq.inject({}){|sum, o| sum.merge!({ o.owner.address => o.owner_id})}
     end
 
     def fetch_owners(nft_id: nil, mode: "manual", date: Date.today)
       nft = Nft.find nft_id
       return if nft.nil? || nft.owner_nfts.where(event_date: date).sum(:amount).to_f == nft.total_supply.to_f
       puts nft.name
-      nft.fetch_owners(mode: mode)
+      nft.fetch_owners(mode: mode, date: date)
     end
 
     def holding_time_median(nft_id)

@@ -29,9 +29,4 @@ namespace :data do
     NftHistoryService.generate_nfts_view
     p "Create nfts_view success"
   end
-
-  desc 'Fetch target nft owners purchase data'
-  task :fetch_target_nft_owners_purchase, [:duration] => [:environment] do |task, args|
-    NftOwnerService.fetch_target_nft_owners_purchase(args[:duration])
-  end
 end

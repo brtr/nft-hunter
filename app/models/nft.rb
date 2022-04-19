@@ -92,41 +92,31 @@ class Nft < ApplicationRecord
     end
   end
 
-  def sync_moralis_trades(mode="manual", offset=nil, date=Date.yesterday)
+  def sync_moralis_trades(mode="manual", cursor=nil)
     return unless address
-    if offset.present?
-      from_date = date
-    else
-      today = Date.today
-      from_date = nft_trades.where(trade_time: [date..today]).size > 0 ? date.strftime("%Y-%m-%d") : (today - 1.month).strftime("%Y-%m-%d")
-    end
 
     begin
-      url = "https://deep-index.moralis.io/api/v2/nft/#{address}/trades?chain=eth&marketplace=opensea&from_date=#{from_date}"
-      url += "&offset=#{offset}" if offset
+      url = "https://deep-index.moralis.io/api/v2/nft/#{address}/transfers?chain=eth&format=decimal"
+      url += "&cursor=#{cursor}" if cursor
       response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read
       if response
         data = JSON.parse(response)
         result = data["result"]
         if result.any?
           result.each do |trade|
-            price = trade["price"].to_f / 10**18
-            trade["token_ids"].each do |token_id|
-              nft_trades.where(token_id: token_id, trade_time: trade["block_timestamp"], seller: trade["seller_address"],
-                buyer: trade["buyer_address"], trade_price: price).first_or_create
-            end
+            next if trade["value"].to_f == 0 || trade["contract_type"] != "ERC721" || trade["from_address"] == "0x0000000000000000000000000000000000000000"
+            price = trade["value"].to_f / 10**18
+            nft_trades.where(token_id: trade["token_id"], trade_time: trade["block_timestamp"], seller: trade["from_address"],
+                buyer: trade["to_address"], trade_price: price).first_or_create
           end
         end
       end
 
-      offset = data["page_size"].to_i * data["page"].to_i + 501
-      if data["total"] > offset
-        sleep 3
-        sync_moralis_trades(mode, offset, from_date)
-      end
+      size = data["page_size"].to_i * data["page"].to_i + 500
+      sync_moralis_trades(mode, data["cursor"]) if data["cursor"].present? && nft_trades.count < size
     rescue => e
-      FetchDataLog.create(fetch_type: mode, source: "Sync Moralis Trades", url: url, error_msgs: e, event_time: DateTime.now)
-      puts "Fetch moralis Error: #{name} can't sync trades"
+      FetchDataLog.create(fetch_type: mode, source: "Sync Moralis Transfers", url: url, error_msgs: e, event_time: DateTime.now)
+      puts "Fetch moralis Error: #{name} can't sync transfers"
     end
   end
 

@@ -5,5 +5,6 @@ class FetchSingleNftTradesJob < ApplicationJob
     nft = Nft.find_by id: nft_id
     nft.sync_moralis_trades
     NftOwnerService.holding_time_median(nft.id)
+    NftHistoryService.get_data_from_trades(nft.id)
   end
 end

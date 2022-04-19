@@ -52,13 +52,14 @@ module NftsHelper
     "#{count} (#{(ratio * 100).round(2)}%)"
   end
 
-  def get_purchase_data(nft, data)
-    owners_count = NftPurchaseHistory.without_target_nfts.last_day.where(nft_id: nft.nft_id).pluck(:owner_id).uniq.size
-    tokens_count = data[nft.nft_id]
-    ratio = (tokens_count.to_f / nft.total_supply) rescue 0
+  def get_purchase_data(nft)
+    purchase = nft.target_nft_owner_histories.last_purchase
+    data = purchase.data
+    tokens_count = data[:tokens_count]
+    ratio = (tokens_count.to_f / data[:total_count].to_f) rescue 0
     {
       token_ratio: "#{tokens_count} (#{(ratio * 100).round(2)}%)",
-      owners_count: owners_count
+      owners_count: data[:bch_count]
     }
   end
 
