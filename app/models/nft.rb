@@ -87,7 +87,7 @@ class Nft < ApplicationRecord
         h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"], bchp: bchp)
       end
     rescue => e
-      FetchDataLog.create(fetch_type: mode, source: "Sync Opensea", url: url, error_msgs: e, event_time: DateTime.now)
+      FetchDataLog.create(fetch_type: mode, source: "Sync Opensea Stats", url: url, error_msgs: e, event_time: DateTime.now)
       puts "Fetch opensea Error: #{name} can't sync stats"
     end
   end
@@ -125,12 +125,30 @@ class Nft < ApplicationRecord
         sync_moralis_trades(mode, offset, from_date)
       end
     rescue => e
-      FetchDataLog.create(fetch_type: mode, source: "Sync Moralis", url: url, error_msgs: e, event_time: DateTime.now)
+      FetchDataLog.create(fetch_type: mode, source: "Sync Moralis Trades", url: url, error_msgs: e, event_time: DateTime.now)
       puts "Fetch moralis Error: #{name} can't sync trades"
     end
   end
 
   def total_owners
     owner_nfts.where(event_date: Date.yesterday)
+  end
+
+  def sync_opensea_info(mode="manual")
+    return unless address
+
+    begin
+      url = "https://api.opensea.io/api/v1/asset_contract/#{address}"
+      response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
+      if response
+        data = JSON.parse(response)
+
+        slug = data["collection"]["slug"]
+        self.update(chain_id: 1, name: data["name"], slug: slug, opensea_slug: slug, logo: data["image_url"], opensea_url: "https://opensea.io/collection/#{slug}")
+      end
+    rescue => e
+      FetchDataLog.create(fetch_type: mode, source: "Sync Opensea Info", url: url, error_msgs: e, event_time: DateTime.now)
+      puts "Fetch opensea Error: #{name} can't sync info"
+    end
   end
 end

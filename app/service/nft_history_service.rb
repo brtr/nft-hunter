@@ -84,5 +84,45 @@ class NftHistoryService
         h.update(eth_floor_price: floor_price, eth_volume: volume, sales: trades.size)
       end
     end
+
+    def get_latest_block
+      response = URI.open("https://deep-index.moralis.io/api/v2/dateToBlock?chain=eth&date=#{Time.now.to_i}", {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read
+      if response
+        data = JSON.parse(response)
+        return data["block"]
+      else
+        0
+      end
+    end
+
+    def get_data_from_transfers(cursor: nil, mode: "manual", result: [])
+      begin
+        from_block = $redis.get("latest_block") || get_latest_block
+        puts "from_block: #{from_block}"
+        url = "https://deep-index.moralis.io/api/v2/nft/transfers?chain=eth&format=decimal&from_block=#{from_block}"
+        url += "&cursor=#{cursor}" if cursor
+        response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read
+        data = JSON.parse(response)
+        latest_block = data["result"][0]["block_number"]
+        $redis.set("latest_block", latest_block) if latest_block.to_i > $redis.get("latest_block").to_i
+        result.push(data["result"])
+      rescue => e
+        FetchDataLog.create(fetch_type: mode, source: "Fetch Transfer", url: url, error_msgs: e, event_time: DateTime.now)
+        puts "Fetch moralis Error: #{e}"
+      end
+    end
+
+    def fetch_nfts_from_transfer(mode="manual")
+      result = []
+      get_data_from_transfers(mode: mode, result: result)
+      if result.any?
+        result = result.flatten.group_by{|r| r["token_address"]}.inject({}){|sum, r| sum.merge({r[0] => r[1].count})}.sort_by{|k,v| v}.reverse.first(5)
+        result.each do |r|
+          Nft.where(address: r[0]).first_or_create
+        end
+      else
+        puts "No Transfers!"
+      end
+    end
   end
 end
