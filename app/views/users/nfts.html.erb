@@ -5,8 +5,9 @@
   <table class="table">
     <thead>
       <tr>
+        <th scope="col">Logo</th>
         <th scope="col">
-          <%= link_to "Name", user_nfts_path(current_user, sort_by: "Name", sort: @sort) %>
+          <%= link_to "Name", user_nfts_path(current_user, sort_by: "name", sort: @sort) %>
         </th>
         <th scope="col">Floor Price</th>
         <th scope="col">
@@ -36,12 +37,8 @@
     <tbody>
        <% @nfts.each do |nft| %>
         <tr>
-          <td>
-            <%= link_to nft_path(nft.slug), class: "nft-name" do %>
-              <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
-              <span class="text-dark"><%= nft.name.humanize %></span>
-            <% end %>
-          </td>
+          <td style="width: 3%"><%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %></td>
+          <td><%= link_to nft.name.humanize, nft_path(nft.slug), class: "nft-name text-dark" %></td>
           <td style="width: 10%">
             <%= "#{decimal_format(nft.eth_floor_price_24h)} ETH" %>
             <%= link_to nft.opensea_url, target: "_blank" do %>

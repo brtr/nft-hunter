@@ -14,6 +14,6 @@ module ApplicationHelper
   end
 
   def decimal_format(data)
-    data.to_f.round(2)
+    data.to_f.round(3)
   end
 end
