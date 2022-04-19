@@ -6,6 +6,7 @@
           <thead>
             <tr>
               <th scope="col">Rank</th>
+              <th scope="col">Logo</th>
               <th scope="col">
                 <%= link_to "Name", nfts_path(sort_by: "Name", sort: @sort) %>
               </th>
@@ -47,12 +48,8 @@
               <% next if nft.user_id %>
               <tr>
                 <td style="width: 3%"><%= nft.eth_volume_rank %></td>
-                <td>
-                  <%= link_to nft_path(nft.slug), class: "nft-name" do %>
-                    <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
-                    <span class="text-dark"><%= nft.name.humanize %></span>
-                  <% end %>
-                </td>
+                <td style="width: 3%"><%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %></td>
+                <td><%= link_to nft.name.humanize, nft_path(nft.slug), class: "nft-name text-dark" %></td>
                 <td class="text-<%= change_text_color(nft.volume_rank_24h.to_f) %>" data-bs-toggle="tooltip" title='<%= "#{nft.eth_volume_rank_24h} -> #{nft.eth_volume_rank}" %>'><%= nft.volume_rank_24h %></td>
                 <td class="text-<%= change_text_color(nft.volume_rank_3d.to_f) %>" data-bs-toggle="tooltip" title='<%= "#{nft.eth_volume_rank_3d} -> #{nft.eth_volume_rank}" %>'><%= nft.volume_rank_3d %></td>
                 <td style="width: 10%">

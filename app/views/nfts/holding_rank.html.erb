@@ -4,6 +4,7 @@
     <thead>
       <tr>
         <th scope="col">Rank</th>
+        <th scope="col">Logo</th>
         <th scope="col">Name</th>
         <th scope="col">Tokens Count</th>
         <th scope="col">Owners Count</th>
@@ -19,12 +20,8 @@
       <% @nfts.each_with_index do |nft, idx| %>
         <tr>
           <td><%= idx + 1 %></td>
-          <td>
-            <%= link_to nft_path(nft.slug), class: "nft-name" do %>
-              <%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %>
-              <span class="text-dark"><%= nft.name.humanize %></span>
-            <% end %>
-          </td>
+          <td style="width: 3%"><%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %></td>
+          <td><%= link_to nft.name.humanize, nft_path(nft.slug), class: "nft-name text-dark" %></td>
           <td><%= get_count_ratio(nft) %></td>
           <td><%= nft.owners_count %></td>
           <td>
