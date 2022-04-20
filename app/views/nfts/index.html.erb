@@ -8,39 +8,71 @@
               <th scope="col">Rank</th>
               <th scope="col">Logo</th>
               <th scope="col">
-                <%= link_to "Name", nfts_path(sort_by: "Name", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "name", sort: @sort) do %>
+                  Name
+                  <%= sort_arrow("name") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Rank 24H", nfts_path(sort_by: "eth_volume_rank_24h", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "eth_volume_rank_24h", sort: @sort) do %>
+                  Rank 24H
+                  <%= sort_arrow("eth_volume_rank_24h") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Rank 3D", nfts_path(sort_by: "eth_volume_rank_3d", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "eth_volume_rank_3d", sort: @sort) do %>
+                  Rank 3D
+                  <%= sort_arrow("eth_volume_rank_3d") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Floor Price", nfts_path(sort_by: "eth_floor_price_24h", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "eth_floor_price_24h", sort: @sort) do %>
+                  Price 24H
+                  <%= sort_arrow("eth_floor_price_24h") %>
+                <% end %>
               </th>
               <th scope="col" data-bs-toggle="tooltip" title="Blue chip holder percentage: number of holders that have atleast one other blue chip project/ Number of total holders">
-                <%= link_to "BCHP", nfts_path(sort_by: "bchp", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "bchp", sort: @sort) do %>
+                  BCHP
+                  <%= sort_arrow("bchp") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Holding Median", nfts_path(sort_by: "median", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "median", sort: @sort) do %>
+                  Holding Median
+                  <%= sort_arrow("median") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "24h", nfts_path(sort_by: "variation", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "variation", sort: @sort) do %>
+                  24h
+                  <%= sort_arrow("variation") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Volume", nfts_path(sort_by: "volume_24h", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "eth_volume_24h", sort: @sort) do %>
+                  Volume
+                  <%= sort_arrow("eth_volume_24h") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Sales", nfts_path(sort_by: "sales_24h", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "sales_24h", sort: @sort) do %>
+                  Sales
+                  <%= sort_arrow("sales_24h") %>
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Listed / Supply Ratio", nfts_path(sort_by: "listed_ratio", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "listed_ratio", sort: @sort) do %>
+                  Listed / Supply Ratio
+                  <%= sort_arrow("listed_ratio") %> 
+                <% end %>
               </th>
               <th scope="col">
-                <%= link_to "Floor Cap", nfts_path(sort_by: "floor_cap", sort: @sort) %>
+                <%= link_to nfts_path(sort_by: "eth_floor_cap", sort: @sort) do %>
+                  Floor Cap
+                  <%= sort_arrow("eth_floor_cap") %>
+                <% end %>
               </th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -58,19 +90,13 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-compass align-middle me-2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                   <% end if nft.opensea_url %>
                 </td>
-                <td style="width: 6%"><%= "#{decimal_format(nft.bchp)} %" %></td>
+                <td><%= "#{decimal_format(nft.bchp)} %" %></td>
                 <td><%= "#{decimal_format(nft.median)} Days" %></td>
-                <td style="width: 3%" class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{decimal_format(nft.variation)}%" %></td>
-                <td style="width: 8%"><%= "#{decimal_format(nft.eth_volume_24h)} ETH" %></td>
-                <td style="width: 3%"><%= nft.sales_24h %></td>
+                <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{decimal_format(nft.variation)}%" %></td>
+                <td><%= "#{decimal_format(nft.eth_volume_24h)} ETH" %></td>
+                <td><%= nft.sales_24h %></td>
                 <td><%= listed_and_supply_radio(nft) %></td>
                 <td><%= "#{decimal_format(nft.eth_floor_cap)} ETH" %></td>
-                <% if current_user && nft.user_id == current_user.id %>
-                  <td style="width: 6%">
-                    <%= link_to "Edit", edit_nft_path(nft.nft_id), class: "btn btn-link"  %>
-                    <%= link_to "Sync data", sync_data_nft_path(nft.nft_id), class: "btn btn-link synBtn" %>
-                  </td>
-                <% end %>
               </tr>
             <% end %>
           </tbody>

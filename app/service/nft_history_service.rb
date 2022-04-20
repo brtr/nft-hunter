@@ -19,9 +19,10 @@ class NftHistoryService
           nft.update(total_supply: asset["totalSupply"]) unless except_nfts.include?(slug)
           listed_ratio = asset["listedRatio"]
           listed = nft.total_supply / listed_ratio
+          opensea_url = "https://opensea.io/collection/#{nft.opensea_slug}"
 
           nft.update(listed_ratio: listed_ratio, listed: listed, floor_cap: asset["floorCapUSD"], eth_floor_cap: asset["floorCapETH"],
-                    variation: asset["variationETH"], opensea_url: asset["url"], opensea_slug: slug)
+                    variation: asset["variationETH"], opensea_url: opensea_url)
           sales_data = asset["salesData"]
           h = nft.nft_histories.where(event_date: Date.yesterday).first_or_create
           bchp = cal_bchp(nft)
