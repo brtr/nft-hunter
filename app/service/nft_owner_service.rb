@@ -35,7 +35,7 @@ class NftOwnerService
     def get_target_owners_trades(nft_id, date=Date.yesterday)
       trades = NftTrade.where(nft_id: nft_id, trade_time: [date.at_beginning_of_day..date.at_end_of_day])
       owners = OwnerNft.joins(:owner).where(nft_id: nft_id, event_date: date, owner: {address: trades.pluck(:buyer)})
-      result = {total_count: trades.size, bch_count: [], tokens_count: 0}
+      result = {total_count: owners.size, bch_count: [], tokens_count: 0}
 
       target_nfts.each do |nft|
         next if nft.id == nft_id
@@ -44,7 +44,7 @@ class NftOwnerService
 
         if data.any?
           result[:bch_count].push(data.pluck(:id).compact)
-          result[:tokens_count] += data.sum(&:amount)
+          result[:tokens_count] += data.size
         end
       end
 

@@ -21,7 +21,7 @@
         <tr>
           <td><%= idx + 1 %></td>
           <td style="width: 3%"><%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %></td>
-          <td><%= link_to nft.name.humanize, nft_path(nft.slug), class: "nft-name text-dark" %></td>>
+          <td><%= link_to nft.name.humanize, nft_path(nft.slug), class: "nft-name text-dark" %></td>
           <td><%= get_purchase_data(nft)[:token_ratio] %></td>
           <td><%= get_purchase_data(nft)[:owners_count] %></td>
           <td>
