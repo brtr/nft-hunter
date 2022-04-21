@@ -50,6 +50,7 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.total_supply,
       n.floor_cap,
       n.eth_floor_cap,
+      n.updated_at,
       n.listed,
       n.listed_ratio,
       h1.sales as sales_24h,

@@ -1,12 +1,12 @@
 require 'open-uri'
 
 class Nft < ApplicationRecord
-  has_many :nft_histories
-  has_many :owner_nfts
+  has_many :nft_histories, autosave: true
+  has_many :owner_nfts, autosave: true
   has_many :owners, through: :owner_nfts
-  has_many :nft_purchase_histories
-  has_many :target_nft_owner_histories
-  has_many :nft_trades
+  has_many :nft_purchase_histories, autosave: true
+  has_many :target_nft_owner_histories, autosave: true
+  has_many :nft_trades, autosave: true
 
   def fetch_pricefloor_histories
     response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all", {read_timeout: 20}).read rescue nil

@@ -1,5 +1,5 @@
 class NftPurchaseHistory < ApplicationRecord
-  belongs_to :nft
+  belongs_to :nft, touch: true
   belongs_to :owner
 
   scope :without_target_nfts, -> { includes(:nft).where.not(nft: {is_marked: true})}

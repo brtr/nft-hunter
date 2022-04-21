@@ -73,6 +73,12 @@
                   <%= sort_arrow("eth_floor_cap") %>
                 <% end %>
               </th>
+              <th scope="col">
+                <%= link_to nfts_path(sort_by: "updated_at", sort: @sort) do %>
+                  Updated At
+                  <%= sort_arrow("updated_at") %>
+                <% end %>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -97,6 +103,7 @@
                 <td><%= nft.sales_24h %></td>
                 <td><%= listed_and_supply_radio(nft) %></td>
                 <td><%= "#{decimal_format(nft.eth_floor_cap)} ETH" %></td>
+                <td><%= time_format(nft.updated_at) %></td>
               </tr>
             <% end %>
           </tbody>

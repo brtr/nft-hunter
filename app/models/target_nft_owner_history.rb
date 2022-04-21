@@ -1,5 +1,5 @@
 class TargetNftOwnerHistory < ApplicationRecord
-  belongs_to :nft
+  belongs_to :nft, touch: true
 
   serialize :data
 
