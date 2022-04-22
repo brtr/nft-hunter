@@ -8,7 +8,7 @@ class NftsController < ApplicationController
     @sort = params[:sort] == "desc" ? "asc" : "desc"
     @q = NftsView.includes(:nft).ransack(params[:q])
     nfts = @q.result
-    @nfts = nfts.order("#{sort_by} #{@sort}").page(@page).per(50)
+    @nfts = nfts.where("eth_volume_24h >= ?", 100).order("#{sort_by} #{@sort}").page(@page).per(50)
   end
 
   def show

@@ -81,7 +81,7 @@ class Nft < ApplicationRecord
         data = JSON.parse(response)
         result = data["stats"]
 
-        self.update(total_supply: result["count"], eth_floor_cap: result["market_cap"], variation: 0)
+        self.update(total_supply: result["count"], total_volume: result["total_volume"], eth_floor_cap: result["market_cap"], variation: 0)
         bchp = NftHistoryService.cal_bchp(self)
         h = nft_histories.where(event_date: Date.yesterday).first_or_create
         h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"], bchp: bchp)
@@ -104,7 +104,7 @@ class Nft < ApplicationRecord
         result = data["result"]
         if result.any?
           result.each do |trade|
-            next if trade["value"].to_f == 0 || trade["contract_type"] != "ERC721" || trade["from_address"] == "0x0000000000000000000000000000000000000000"
+            next if trade["value"].to_f == 0 || trade["contract_type"] != "ERC721" || !trade["token_address"].in?([ENV["OPENSEA_V1_ADDRESS"], ENV["OPENSEA_V2_ADDRESS"]])
             price = trade["value"].to_f / 10**18
             nft_trades.where(token_id: trade["token_id"], trade_time: trade["block_timestamp"], seller: trade["from_address"],
                 buyer: trade["to_address"], trade_price: price).first_or_create
