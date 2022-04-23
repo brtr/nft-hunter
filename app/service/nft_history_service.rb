@@ -26,9 +26,10 @@ class NftHistoryService
           sales_data = asset["salesData"]
           h = nft.nft_histories.where(event_date: Date.yesterday).first_or_create
           bchp = cal_bchp(nft)
+          h.bchp.present? ? h.update(bchp_12h: bchp) : h.update(bchp: bchp)
 
           h.update(floor_price: asset["floorPriceUSD"], eth_floor_price: asset["floorPriceETH"], sales: sales_data["numberSales24h"],
-                  volume: sales_data["sales24hVolumeUSD"], eth_volume: sales_data["sales24hVolumeETH"], bchp: bchp)
+                  volume: sales_data["sales24hVolumeUSD"], eth_volume: sales_data["sales24hVolumeETH"])
         end
 
         (Nft.all.pluck(:slug) - nfts.uniq.compact).each do |slug|
@@ -70,7 +71,7 @@ class NftHistoryService
 
     def cal_bchp(nft)
       bchp_nft_ids = Nft.where(is_marked: true).pluck(:id) - [nft.id]
-      bchp_owner_ids = OwnerNft.where(event_date: Date.yesterday, nft_id: bchp_nft_ids).pluck(:owner_id).uniq
+      bchp_owner_ids = OwnerNft.where(event_date: Date.today, nft_id: bchp_nft_ids).pluck(:owner_id).uniq
       bchp_owners = nft.total_owners.where(owner_id: bchp_owner_ids)
       bchp = nft.total_owners.size == 0 ? 0 : (bchp_owners.size / nft.total_owners.size.to_f) * 100
     end

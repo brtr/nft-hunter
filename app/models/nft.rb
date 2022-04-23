@@ -84,7 +84,8 @@ class Nft < ApplicationRecord
         self.update(total_supply: result["count"], total_volume: result["total_volume"], eth_floor_cap: result["market_cap"], variation: 0)
         bchp = NftHistoryService.cal_bchp(self)
         h = nft_histories.where(event_date: Date.yesterday).first_or_create
-        h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"], bchp: bchp)
+        h.bchp.present? ? h.update(bchp_12h: bchp) : h.update(bchp: bchp)
+        h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"])
       end
     rescue => e
       FetchDataLog.create(fetch_type: mode, source: "Sync Opensea Stats", url: url, error_msgs: e, event_time: DateTime.now)
@@ -121,7 +122,7 @@ class Nft < ApplicationRecord
   end
 
   def total_owners
-    owner_nfts.where(event_date: Date.yesterday)
+    owner_nfts.where(event_date: Date.today)
   end
 
   def sync_opensea_info(mode="manual")

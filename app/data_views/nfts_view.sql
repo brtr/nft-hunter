@@ -11,6 +11,7 @@ CREATE MATERIALIZED VIEW nfts_view AS
         sales,
         eth_volume_rank,
         bchp,
+        bchp_12h,
         median
       FROM nft_histories
       WHERE event_date = CURRENT_DATE - interval '1 day'
@@ -56,6 +57,7 @@ CREATE MATERIALIZED VIEW nfts_view AS
       n.listed_ratio,
       h1.sales as sales_24h,
       h1.bchp as bchp,
+      h1.bchp_12h as bchp_12h,
       h1.median as median,
       ROUND(h1.floor_price, 2) as floor_price_24h,
       h1.eth_floor_price as eth_floor_price_24h,
@@ -68,6 +70,7 @@ CREATE MATERIALIZED VIEW nfts_view AS
       COALESCE((case when n.variation > 0 then n.variation else (h1.eth_floor_price - h2.eth_floor_price) / NULLIF(h2.eth_floor_price,0) end ), 0) as variation,
       COALESCE((case when h2.eth_volume_rank = 0 then h1.eth_volume_rank else h2.eth_volume_rank - h1.eth_volume_rank end ), 0) as volume_rank_24h,
       COALESCE((case when h3.eth_volume_rank = 0 then h1.eth_volume_rank else h3.eth_volume_rank - h1.eth_volume_rank end ), 0) as volume_rank_3d,
+      COALESCE((case when h1.bchp_12h = 0 then h1.bchp else h1.bchp - h1.bchp_12h end ), 0) as bchp_12h_change,
       COALESCE((case when h2.bchp = 0 then h1.bchp else h1.bchp - h2.bchp end ), 0) as bchp_24h_change
       FROM nfts as n
       LEFT JOIN histories_today as h1 on h1.nft_id = n.id
