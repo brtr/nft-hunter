@@ -104,8 +104,8 @@ class Nft < ApplicationRecord
         result = data["result"]
         if result.any?
           result.each do |trade|
-            next if trade["value"].to_f == 0 || trade["contract_type"] != "ERC721" || !trade["token_address"].in?([ENV["OPENSEA_V1_ADDRESS"], ENV["OPENSEA_V2_ADDRESS"]])
-            price = trade["value"].to_f / 10**18
+            price = trade["value"].to_f / 10**18 rescue 0
+            next if price == 0 || trade["contract_type"] != "ERC721" || trade["from_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || trade["to_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
             nft_trades.where(token_id: trade["token_id"], trade_time: trade["block_timestamp"], seller: trade["from_address"],
                 buyer: trade["to_address"], trade_price: price).first_or_create
           end

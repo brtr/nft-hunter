@@ -96,17 +96,24 @@ class NftHistoryService
       end
     end
 
-    def get_data_from_transfers(cursor: nil, mode: "manual", result: [])
+    def get_data_from_transfers(cursor: nil, mode: "manual", result: [], to_block: nil)
       begin
-        from_block = $redis.get("latest_block") || get_latest_block
-        puts "from_block: #{from_block}"
-        url = "https://deep-index.moralis.io/api/v2/nft/transfers?chain=eth&format=decimal&from_block=#{from_block}"
+        to_block ||= get_latest_block
+        puts "from_block: #{to_block}"
+        from_block = to_block.to_i - 100
+        url = "https://deep-index.moralis.io/api/v2/nft/transfers?chain=eth&format=decimal&from_block=#{from_block}&to_block=#{to_block}"
         url += "&cursor=#{cursor}" if cursor
         response = URI.open(url, {"X-API-Key" => ENV["MORALIS_API_KEY"]}).read
         data = JSON.parse(response)
-        latest_block = data["result"][0]["block_number"]
-        $redis.set("latest_block", latest_block) if latest_block.to_i > $redis.get("latest_block").to_i
-        result.push(data["result"])
+        data["result"].each do |r|
+          next if r["value"].to_f == 0 || r["contract_type"] != "ERC721" || r["from_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || r["to_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
+          result.push(r)
+        end
+        if data["cursor"].present?
+          get_data_from_transfers(cursor: data["cursor"], mode: mode, result: result, to_block: to_block)
+        else
+          return result
+        end
       rescue => e
         FetchDataLog.create(fetch_type: mode, source: "Fetch Transfer", url: url, error_msgs: e, event_time: DateTime.now)
         puts "Fetch moralis Error: #{e}"
@@ -117,8 +124,7 @@ class NftHistoryService
       result = []
       get_data_from_transfers(mode: mode, result: result)
       if result.any?
-        result = result.flatten.select{|r| r["value"].to_f > 0 && r["contract_type"] == "ERC721" && r["from_address"] != "0x0000000000000000000000000000000000000000"}
-        result.group_by{|r| r["token_address"]}.inject({}){|sum, r| sum.merge({r[0] => r[1].count})}.sort_by{|k,v| v}.reverse.first(5).each do |r|
+        result.group_by{|r| r["token_address"]}.inject({}){|sum, r| sum.merge({r[0] => r[1].sum{|i| i["amount"].to_i * (i["value"].to_i / 10**18)}})}.select{|k, v| v.to_f > 10}.each do |r|
           Nft.where(address: r[0]).first_or_create
         end
       else
