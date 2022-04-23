@@ -10,4 +10,8 @@ class NftsView < ApplicationRecord
   belongs_to :nft
 
   delegate :user_id, :total_owners, to: :nft
+
+  def display_bchp
+    bchp || bchp_6h || bchp_12h
+  end
 end

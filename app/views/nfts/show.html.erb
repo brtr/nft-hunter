@@ -31,7 +31,7 @@
       <div class="card" style="height: 160px">
         <div class="card-body">
           <div>
-            <h5 class="border-bottom pb-2">Total Owners <span class="float-end"><%= link_to "#{@nft.total_owners.size} (#{decimal_format(@nft.bchp)}%)", bch_list_nft_path(@nft) %></span></h5>
+            <h5 class="border-bottom pb-2">Total Owners <span class="float-end"><%= link_to "#{@nft.total_owners.size} (#{decimal_format(@nft.display_bchp)}%)", bch_list_nft_path(@nft) %></span></h5>
             <h5 class="border-bottom pb-2">Total Purchase 24H <span class="float-end"><%= get_sales_info(@purchase_24h) %></span></h5>
             <% result = fetch_purchase_history_data(@purchase_7d) %>
             <h5>Total Purchase 7D <span class="float-end"><%= get_sales_info(result) %></span></h5>

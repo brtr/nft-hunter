@@ -31,6 +31,18 @@
                   <%= sort_arrow("eth_floor_price_24h") %>
                 <% end %>
               </th>
+              <th scope="col" data-bs-toggle="tooltip" title="Blue chip holder percentage: number of holders that have atleast one other blue chip project/ Number of total holders">
+                <%= link_to nfts_path(sort_by: "bchp", sort: @sort) do %>
+                  BCHP
+                  <%= sort_arrow("bchp") %>
+                <% end %>
+              </th>
+              <th scope="col">
+                <%= link_to nfts_path(sort_by: "bchp_6h", sort: @sort) do %>
+                  BCHP 6H
+                  <%= sort_arrow("bchp_6h") %>
+                <% end %>
+              </th>
               <th scope="col">
                 <%= link_to nfts_path(sort_by: "bchp_12h", sort: @sort) do %>
                   BCHP 12H
@@ -41,12 +53,6 @@
                 <%= link_to nfts_path(sort_by: "bchp_24h", sort: @sort) do %>
                   BCHP 24H
                   <%= sort_arrow("bchp_24h") %>
-                <% end %>
-              </th>
-              <th scope="col" data-bs-toggle="tooltip" title="Blue chip holder percentage: number of holders that have atleast one other blue chip project/ Number of total holders">
-                <%= link_to nfts_path(sort_by: "bchp", sort: @sort) do %>
-                  BCHP
-                  <%= sort_arrow("bchp") %>
                 <% end %>
               </th>
               <th scope="col">
@@ -108,9 +114,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-compass align-middle me-2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                   <% end if nft.opensea_url %>
                 </td>
+                <td><%= "#{decimal_format(nft.bchp)} %" %></td>
+                <td class="text-<%= change_text_color(nft.bchp_6h_change.to_f) %>" data-bs-toggle="tooltip" title='<%= "#{decimal_format(nft.bchp_6h)}% -> #{decimal_format(nft.bchp)}%" %>'><%= "#{decimal_format(nft.bchp_6h_change)} %" %></td>
                 <td class="text-<%= change_text_color(nft.bchp_12h_change.to_f) %>" data-bs-toggle="tooltip" title='<%= "#{decimal_format(nft.bchp_12h)}% -> #{decimal_format(nft.bchp)}%" %>'><%= "#{decimal_format(nft.bchp_12h_change)} %" %></td>
                 <td class="text-<%= change_text_color(nft.bchp_24h_change.to_f) %>" data-bs-toggle="tooltip" title='<%= "#{decimal_format(nft.bchp_24h)}% -> #{decimal_format(nft.bchp)}%" %>'><%= "#{decimal_format(nft.bchp_24h_change)} %" %></td>
-                <td><%= "#{decimal_format(nft.bchp)} %" %></td>
                 <td><%= "#{decimal_format(nft.median)} Days" %></td>
                 <td class="text-<%= change_text_color(nft.variation.to_f) %>"><%= "#{decimal_format(nft.variation)}%" %></td>
                 <td><%= "#{decimal_format(nft.eth_volume_24h)} ETH" %></td>
