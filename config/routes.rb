@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   end
 
   resources :holding_rank_snap_shots, only: [:index, :show]
+  resources :nft_snap_shots, only: [:index, :show]
 
   post 'login', to: "users#login", as: :login
   post 'logout', to: "users#logout", as: :logout

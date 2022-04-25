@@ -1,4 +1,4 @@
-class GenerateSnapshotJob < ApplicationJob
+class GenerateHoldingRankSnapshotJob < ApplicationJob
   queue_as :daily_job
 
   def perform(date: Date.yesterday)

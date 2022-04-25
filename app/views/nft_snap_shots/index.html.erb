@@ -1,6 +1,6 @@
 <div class="m-3">
   <div class="m-3">
-    <h3 class="text-center"> Holding Rank SnapShot </h3>
+    <h3 class="text-center"> Nft SnapShot </h3>
   </div>
   <div id="snapshot-container" class="mt-2">
     <div class="container">
@@ -13,7 +13,7 @@
               <div class="row">
                 <% m[:dates].each do |d| %>
                   <div class="text-center col-2 p-3">
-                    <%= link_to d[:day], holding_rank_snap_shot_path(d[:id]) %>
+                    <%= link_to d[:day], nft_snap_shot_path(d[:id]) %>
                   </div>
                 <% end %>
               </div>

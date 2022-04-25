@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_23_132431) do
+ActiveRecord::Schema.define(version: 2022_04_25_042609) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -100,6 +100,50 @@ ActiveRecord::Schema.define(version: 2022_04_23_132431) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["nft_id", "owner_id"], name: "index_nft_purchase_histories_on_nft_id_and_owner_id"
+  end
+
+  create_table "nft_snap_shot_views", force: :cascade do |t|
+    t.integer "nft_snap_shot_id"
+    t.integer "nft_id"
+    t.integer "chain_id"
+    t.integer "sales_24h"
+    t.string "name"
+    t.string "slug"
+    t.string "logo"
+    t.string "address"
+    t.string "opensea_url"
+    t.decimal "total_supply"
+    t.decimal "floor_cap"
+    t.decimal "listed_ratio"
+    t.decimal "variation"
+    t.decimal "floor_price_24h"
+    t.decimal "volume_24h"
+    t.decimal "eth_floor_price_24h"
+    t.decimal "eth_floor_cap"
+    t.decimal "eth_volume_24h"
+    t.decimal "eth_volume_rank"
+    t.decimal "eth_volume_rank_24h"
+    t.decimal "eth_volume_rank_3d"
+    t.decimal "volume_rank_24h"
+    t.decimal "volume_rank_3d"
+    t.decimal "bchp"
+    t.decimal "median"
+    t.decimal "listed"
+    t.decimal "bchp_12h"
+    t.decimal "bchp_12h_change"
+    t.decimal "bchp_6h"
+    t.decimal "bchp_6h_change"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["nft_id"], name: "index_nft_snap_shot_views_on_nft_id"
+    t.index ["nft_snap_shot_id"], name: "index_nft_snap_shot_views_on_nft_snap_shot_id"
+  end
+
+  create_table "nft_snap_shots", force: :cascade do |t|
+    t.date "event_date"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["event_date"], name: "index_nft_snap_shots_on_event_date"
   end
 
   create_table "nft_trades", force: :cascade do |t|
