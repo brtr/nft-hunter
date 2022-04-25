@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_25_042609) do
+ActiveRecord::Schema.define(version: 2022_04_25_065755) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -189,8 +189,12 @@ ActiveRecord::Schema.define(version: 2022_04_25_042609) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.date "event_date"
+    t.index ["event_date"], name: "index_owner_nfts_on_event_date"
     t.index ["nft_id", "event_date"], name: "index_owner_nfts_on_nft_id_and_event_date"
+    t.index ["nft_id"], name: "index_owner_nfts_on_nft_id"
+    t.index ["owner_id", "nft_id", "event_date"], name: "index_owner_nfts_on_owner_id_and_nft_id_and_event_date"
     t.index ["owner_id", "nft_id"], name: "index_owner_nfts_on_owner_id_and_nft_id"
+    t.index ["owner_id"], name: "index_owner_nfts_on_owner_id"
   end
 
   create_table "owners", force: :cascade do |t|

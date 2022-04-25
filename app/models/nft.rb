@@ -2,7 +2,7 @@ require 'open-uri'
 
 class Nft < ApplicationRecord
   has_many :nft_histories, autosave: true
-  has_many :owner_nfts, autosave: true
+  has_many :owner_nfts
   has_many :owners, through: :owner_nfts
   has_many :nft_purchase_histories, autosave: true
   has_many :target_nft_owner_histories, autosave: true
@@ -46,7 +46,8 @@ class Nft < ApplicationRecord
           owner_nft.update(amount: token_ids.count, token_ids: token_ids)
         end
 
-        sleep 3
+        self.update(updated_at: Time.now)
+        sleep 1
         fetch_owners(mode: mode, cursor: data["cursor"], date: date) if data["cursor"].present?
       end
     rescue => e
