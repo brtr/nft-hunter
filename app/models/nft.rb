@@ -86,10 +86,10 @@ class Nft < ApplicationRecord
   def sync_moralis_trades(date=Date.today)
     transfers = nft_transfers.where(block_timestamp: [date.at_beginning_of_day..date.at_end_of_day])
     transfers.each do |trade|
-      price = trade["value"].to_f / 10**18 rescue 0
-      next if price == 0 || trade["contract_type"] != "ERC721" || trade["from_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || trade["to_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
-      nft_trades.where(token_id: trade["token_id"], trade_time: trade["block_timestamp"], seller: trade["from_address"],
-          buyer: trade["to_address"], trade_price: price).first_or_create
+      price = trade.value.to_f / 10**18 rescue 0
+      next if price == 0 || trade.from_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || trade.to_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
+      nft_trades.where(token_id: trade.token_id, trade_time: trade.block_timestamp, seller: trade.from_address,
+          buyer: trade.to_address, trade_price: price).first_or_create
     end
   end
 
@@ -127,7 +127,6 @@ class Nft < ApplicationRecord
         result = data["result"]
         if result.any?
           result.each do |transfer|
-            next if transfer["contract_type"] != "ERC721"
             nft_transfers.where(token_id: transfer["token_id"], block_timestamp: transfer["block_timestamp"], from_address: transfer["from_address"],
                                 to_address: transfer["to_address"], value: transfer["value"], block_hash: transfer["block_hash"],
                                 block_number: transfer["block_number"], amount: transfer["amount"]).first_or_create
