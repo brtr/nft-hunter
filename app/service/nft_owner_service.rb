@@ -3,12 +3,12 @@ require 'open-uri'
 class NftOwnerService
   class << self
     def get_target_owners_ratio(nft_id, date=Date.yesterday)
-      owners = OwnerNft.where(nft_id: nft_id, event_date: date)
+      owners = OwnerNft.where(nft_id: nft_id)
 
       result = {total_count: owners.size, bch_count: [], data: {}}
       target_nfts.each do |nft|
         next if nft.id == nft_id
-        target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).pluck(:owner_id)
+        target_owners = OwnerNft.where(nft_id: nft.id).pluck(:owner_id)
         data = owners.select{|o| target_owners.include?(o.owner_id)}
 
         if data.any?
@@ -34,12 +34,12 @@ class NftOwnerService
 
     def get_target_owners_trades(nft_id, date=Date.yesterday)
       trades = NftTrade.where(nft_id: nft_id, trade_time: [date.at_beginning_of_day..date.at_end_of_day])
-      owners = OwnerNft.joins(:owner).where(nft_id: nft_id, event_date: date, owner: {address: trades.pluck(:buyer)})
+      owners = OwnerNft.joins(:owner).where(nft_id: nft_id, owner: {address: trades.pluck(:buyer)})
       result = {total_count: owners.size, bch_count: [], tokens_count: 0}
 
       target_nfts.each do |nft|
         next if nft.id == nft_id
-        target_owners = OwnerNft.where(nft_id: nft.id, event_date: date).map{|o| o.owner_id}.uniq
+        target_owners = OwnerNft.where(nft_id: nft.id).map{|o| o.owner_id}.uniq
         data = owners.select{|o| target_owners.include?(o.owner_id)}
 
         if data.any?
@@ -61,10 +61,10 @@ class NftOwnerService
     def get_target_owners_rank(date=Date.yesterday)
       result = []
       target_ids = Nft.where(is_marked: true).pluck(:id)
-      owner_ids = OwnerNft.where(event_date: date, nft_id: target_ids).pluck(:owner_id).uniq
+      owner_ids = OwnerNft.where(nft_id: target_ids).pluck(:owner_id).uniq
       NftsView.all.each do |nft|
         next if target_ids.include?(nft.nft_id)
-        owners = nft.owner_nfts.where(event_date: date, owner_id: owner_ids)
+        owners = nft.owner_nfts.where(owner_id: owner_ids)
         tokens_count = owners.sum(&:amount) rescue 0
         owners_count = owners.size rescue 0
 
@@ -81,8 +81,8 @@ class NftOwnerService
       result.sort_by{|r| r[:tokens_count]}.reverse.first(10)
     end
 
-    def get_target_owners(date=Date.yesterday)
-      OwnerNft.includes(:owner).where(event_date: date, nft_id: target_nfts.pluck(:id)).map{|o| [o.owner.address, o.owner_id]}.uniq.to_h
+    def get_target_owners
+      OwnerNft.where(nft_id: target_nfts.pluck(:id)).map{|o| [o.owner.address, o.owner_id]}.uniq.to_h
     end
 
     def fetch_purchase_histories(nft)
@@ -98,9 +98,9 @@ class NftOwnerService
 
     def fetch_owners(nft_id: nil, mode: "manual", date: Date.today)
       nft = Nft.find nft_id
-      return if nft.nil? || nft.owner_nfts.where(event_date: date).sum(:amount).to_f == nft.total_supply.to_f
+      return if nft.nil? || nft.owner_nfts.sum(:amount).to_f == nft.total_supply.to_f
       puts nft.name
-      nft.fetch_owners(mode: mode, date: date)
+      nft.get_owners(date)
     end
 
     def holding_time_median(nft_id)

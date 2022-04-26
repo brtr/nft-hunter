@@ -74,7 +74,7 @@ class NftHistoryService
 
     def cal_bchp(nft)
       bchp_nft_ids = Nft.where(is_marked: true).pluck(:id) - [nft.id]
-      bchp_owner_ids = OwnerNft.where(event_date: Date.today, nft_id: bchp_nft_ids).pluck(:owner_id).uniq
+      bchp_owner_ids = OwnerNft.where(nft_id: bchp_nft_ids).pluck(:owner_id).uniq
       bchp_owners = nft.total_owners.where(owner_id: bchp_owner_ids)
       bchp = nft.total_owners.size == 0 ? 0 : (bchp_owners.size / nft.total_owners.size.to_f) * 100
     end

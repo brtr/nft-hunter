@@ -91,7 +91,7 @@
           <tbody>
             <% @nfts.each do |nft| %>
               <tr>
-                <td style="width: 3%"><%= nft.eth_volume_rank %></td>
+                <td style="width: 3%"><%= nft.eth_volume_rank.to_i %></td>
                 <td style="width: 3%"><%= image_tag logo_path(nft.slug, nft.logo), class: "rounded-circle small-logo" %></td>
                 <td><%= link_to nft.name.humanize, nft_path(nft.slug), class: "nft-name text-dark" %></td>
                 <td class="text-<%= change_text_color(nft.volume_rank_24h.to_i) %>" data-bs-toggle="tooltip" title='<%= "#{nft.eth_volume_rank_24h} -> #{nft.eth_volume_rank}" %>'><%= nft.volume_rank_24h %></td>

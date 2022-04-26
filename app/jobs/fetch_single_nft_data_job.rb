@@ -5,9 +5,9 @@ class FetchSingleNftDataJob < ApplicationJob
     nft = Nft.find nft_id
     nft.sync_opensea_stats
     sleep 2
-    FetchSingleNftTradesJob.perform_later(nft.id)
+    FetchSingleNftTradesJob.perform_now(nft.id)
     sleep 2
-    FetchOwnersDataJob.perform_later(nft.id)
+    FetchOwnersDataJob.perform_now(nft.id)
     sleep 2
     NftOwnerService.get_target_owners_ratio(nft.id)
     sleep 2

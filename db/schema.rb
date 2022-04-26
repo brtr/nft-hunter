@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_25_065755) do
+ActiveRecord::Schema.define(version: 2022_04_25_094536) do
 
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pgcrypto"
   enable_extension "plpgsql"
 
   create_table "fetch_data_logs", force: :cascade do |t|
@@ -158,6 +159,21 @@ ActiveRecord::Schema.define(version: 2022_04_25_065755) do
     t.index ["nft_id"], name: "index_nft_trades_on_nft_id"
   end
 
+  create_table "nft_transfers", force: :cascade do |t|
+    t.integer "nft_id"
+    t.string "from_address"
+    t.string "to_address"
+    t.string "block_number"
+    t.string "block_hash"
+    t.string "token_id"
+    t.decimal "value"
+    t.decimal "amount"
+    t.datetime "block_timestamp"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["nft_id"], name: "index_nft_transfers_on_nft_id"
+  end
+
   create_table "nfts", force: :cascade do |t|
     t.integer "chain_id"
     t.string "name"
@@ -189,6 +205,8 @@ ActiveRecord::Schema.define(version: 2022_04_25_065755) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.date "event_date"
+    t.datetime "deleted_at"
+    t.index ["deleted_at"], name: "index_owner_nfts_on_deleted_at"
     t.index ["event_date"], name: "index_owner_nfts_on_event_date"
     t.index ["nft_id", "event_date"], name: "index_owner_nfts_on_nft_id_and_event_date"
     t.index ["nft_id"], name: "index_owner_nfts_on_nft_id"
