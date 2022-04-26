@@ -83,7 +83,7 @@ class Nft < ApplicationRecord
     end
   end
 
-  def sync_moralis_trades(date=Date.yesterday)
+  def sync_moralis_trades(date=Date.today)
     transfers = nft_transfers.where(block_timestamp: [date.at_beginning_of_day..date.at_end_of_day])
     transfers.each do |trade|
       price = trade["value"].to_f / 10**18 rescue 0

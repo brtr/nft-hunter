@@ -81,16 +81,11 @@ class NftOwnerService
       result.sort_by{|r| r[:tokens_count]}.reverse.first(10)
     end
 
-    def get_target_owners
-      OwnerNft.where(nft_id: target_nfts.pluck(:id)).map{|o| [o.owner.address, o.owner_id]}.uniq.to_h
-    end
-
-    def fetch_purchase_histories(nft)
-      target_owners = get_target_owners
-      owners_address = target_owners.keys
-      nft.nft_trades.group_by{|t| [t.buyer, t.trade_time]}.each do |k, v|
-        if owners_address.include?(k[0])
-          h = nft.nft_purchase_histories.where(owner_id: target_owners[k[0]], purchase_date: k[1]).first_or_create
+    def fetch_purchase_histories(nft, date=Date.yesterday)
+      nft.nft_trades.where(trade_time: [date.at_beginning_of_day..date.at_end_of_day]).group_by{|t| [t.buyer, t.trade_time]}.each do |k, v|
+        o = OwnerNft.joins(:owner).where(nft_id: target_nfts.pluck(:id), owner: {address: k[0]}).take
+        if o.present?
+          h = nft.nft_purchase_histories.where(owner_id: o.owner_id, purchase_date: k[1]).first_or_create
           h.update(amount: v.count)
         end
       end
