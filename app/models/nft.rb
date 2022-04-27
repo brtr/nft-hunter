@@ -70,10 +70,10 @@ class Nft < ApplicationRecord
         self.update(total_supply: result["count"], total_volume: result["total_volume"], eth_floor_cap: result["market_cap"], variation: 0)
         bchp = NftHistoryService.cal_bchp(self)
         h = nft_histories.where(event_date: Date.yesterday).first_or_create
-        if h.bchp_12h.present?
-          h.update(bchp: bchp, bchp_12h: h.bchp)
+        if h.bchp.present?
+          h.bchp_6h.present? ? h.update(bchp: bchp, bchp_6h: h.bchp, bchp_12h: h.bchp_6h) : h.update(bchp: bchp, bchp_6h: h.bchp)
         else
-          h.update(bchp_12h: bchp)
+          h.update(bchp: bchp)
         end
         h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"])
       end
@@ -85,7 +85,7 @@ class Nft < ApplicationRecord
 
   def sync_moralis_trades(date=Date.today)
     transfers = nft_transfers.where(block_timestamp: [date.at_beginning_of_day..date.at_end_of_day])
-    transfers.each do |trade|
+    nft_transfers.each do |trade|
       price = trade.value.to_f / 10**18 rescue 0
       next if price == 0 || trade.from_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || trade.to_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
       nft_trades.where(token_id: trade.token_id, trade_time: trade.block_timestamp, seller: trade.from_address,

@@ -80,9 +80,10 @@ class NftHistoryService
     end
 
     def get_data_from_trades(nft_id)
+      n = NftsView.find_by(nft_id: nft_id)
       data = NftTrade.where(nft_id: nft_id).group_by{|t| t.trade_time.to_date}.sort_by{|k,v| k}
       data.each do |date, trades|
-        floor_price = trades.pluck(:trade_price).min
+        floor_price = trades.pluck(:trade_price).select{|i| i > n.eth_floor_price_24h.to_f * 0.01}.min
         volume = trades.sum(&:trade_price)
         h = NftHistory.where(nft_id: nft_id, event_date: date).first_or_create
 
