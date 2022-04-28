@@ -31,7 +31,7 @@ class NftsController < ApplicationController
     if nft.address.match(/^0x[a-fA-F0-9]{40}$/)
       nft.user_id = session[:user_id]
       nft.save
-      redirect_to user_nfts_path(current_user), notice: "Add NFT successful!"
+      redirect_to user_nfts_path(nft.user_id), notice: "Add NFT successful!"
     else
       flash[:alert] = "Invalid address!"
       @nft = Nft.new
@@ -50,13 +50,13 @@ class NftsController < ApplicationController
       flash[:alert] = @nft.errors.full_messages.join(', ')
     end
 
-    redirect_to nfts_path
+    redirect_to user_nfts_path(@nft.user_id)
   end
 
   def sync_data
     FetchSingleNftDataJob.perform_later(@nft.id)
 
-    redirect_to nfts_path, notice: "Data is syncing, please refresh the page later!"
+    redirect_to user_nfts_path(@nft.user_id), notice: "Data is syncing, please refresh the page later!"
   end
 
   def bch_list
