@@ -85,9 +85,11 @@ class Nft < ApplicationRecord
 
   def sync_moralis_trades(date=Date.today)
     transfers = nft_transfers.where(block_timestamp: [date.at_beginning_of_day..date.at_end_of_day])
+    last_history = nft_histories.order(event_date: :desc).first
     nft_transfers.each do |trade|
       price = trade.value.to_f / 10**18 rescue 0
-      next if price == 0 || trade.from_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || trade.to_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
+      next if price == 0 || price < last_history.eth_floor_price.to_f * 0.2
+      next if trade.from_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || trade.to_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
       nft_trades.where(token_id: trade.token_id, trade_time: trade.block_timestamp, seller: trade.from_address,
           buyer: trade.to_address, trade_price: price).first_or_create
     end
@@ -145,7 +147,14 @@ class Nft < ApplicationRecord
   def get_owners(date=Date.yesterday)
     transfers = nft_transfers.where(block_timestamp: [date.at_beginning_of_day..date.at_end_of_day])
     transfers.each do |transfer|
-      owner_nfts.includes(:owner).where(owner: {address: transfer.from_address}).take&.destroy
+      seller = owner_nfts.includes(:owner).where(owner: {address: transfer.from_address}).take
+      next unless seller
+      if seller.amount > 1
+        seller.token_ids.delete(transfer.token_id)
+        seller.update(amount: seller.amount - 1, token_ids: seller.token_ids)
+      else
+        seller.destroy
+      end
       owner = Owner.where(address: transfer.to_address).first_or_create
       owner_nft = owner.owner_nfts.where(nft_id: self.id).first_or_create(amount: 0, token_ids: [], event_date: date)
       token_ids = owner_nft.token_ids | [transfer.token_id]
