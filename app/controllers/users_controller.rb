@@ -18,7 +18,7 @@ class UsersController < ApplicationController
       sort_by = params[:sort_by] || "eth_volume_24h"
       @sort = params[:sort] == "desc" ? "asc" : "desc"
       nfts = user.nfts_views
-      @nfts = nfts.sort_by{|n| n.send(sort_by)}
+      @nfts = nfts.sort_by{|n| n.send(sort_by).send(:to_f)}
       @nfts = @nfts.reverse if @sort == "asc"
     else
       redirect_to root_path
