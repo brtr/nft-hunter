@@ -20,6 +20,7 @@ class NftsController < ApplicationController
     @price_data = PriceChartService.new(start_date: period_date(params[:price_period]), nft_id: @nft.nft_id).get_price_data
     @holding_data = PriceChartService.new(start_date: period_date(params[:holding_period]), nft_id: @nft.nft_id).get_holding_data
     @purchase_data = PriceChartService.new(start_date: period_date(params[:purchase_period]), nft_id: @nft.nft_id).get_purchase_data
+    @trade_data = PriceChartService.new(start_date: period_date(params[:trade_period]), nft_id: @nft.nft_id).get_trade_data
   end
 
   def new

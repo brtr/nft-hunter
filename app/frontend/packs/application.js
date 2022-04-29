@@ -3,11 +3,13 @@ require("turbolinks").start();
 require("jquery");
 require("chartkick");
 require("chart.js");
+require("moment");
 require("../stylesheets/application.scss");
 
 import 'bootstrap/dist/css/bootstrap';
 import 'bootstrap/dist/js/bootstrap';
 import Chart from 'chart.js/auto';
+import 'chartjs-adapter-moment';
 
 global.Chart = Chart;
 

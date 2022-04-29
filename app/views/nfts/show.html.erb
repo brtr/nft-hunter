@@ -98,5 +98,24 @@
 
       <%= render "purchase_chart" %>
     </div>
+    <div id="chart">
+      <h2 class="mt-3">Trade Chart</h2>
+      <div class="text-right mt-5">
+        <%= form_tag nft_path, class: "period_targets", method: "GET" do %>
+          <div class="col-12">
+            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+              <%= radio_button_tag :trade_period, "week", params[:trade_period] == "week", class: "btn-check", id: "btnradio1trade" %>
+              <label class="btn btn-outline-primary week" for="btnradio1trade">Week</label>
+              <%= radio_button_tag :trade_period, "month", params[:trade_period] == "month", class: "btn-check", id: "btnradio2trade" %>
+              <label class="btn btn-outline-primary month" for="btnradio2trade">Month</label>
+              <%= radio_button_tag :trade_period, "year", params[:trade_period] == "year", class: "btn-check", id: "btnradio3trade" %>
+              <label class="btn btn-outline-primary year" for="btnradio3trade">Year</label>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%= render "trade_chart" %>
+    </div>
   </div>
 </div>
