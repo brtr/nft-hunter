@@ -17,20 +17,15 @@ class NftHistoryService
           nft = Nft.where(slug: slug, chain_id: 1).first
           next if slug.blank? || nft.blank?
           nft.update(total_supply: asset["totalSupply"]) unless except_nfts.include?(slug)
-          listed_ratio = asset["listedRatio"]
-          listed = nft.total_supply / listed_ratio
+          listed_ratio = asset["listedRatio"].to_f
+          listed = listed_ratio == 0 ? 0 : nft.total_supply / listed_ratio
           opensea_url = "https://opensea.io/collection/#{nft.opensea_slug}"
 
           nft.update(listed_ratio: listed_ratio, listed: listed, floor_cap: asset["floorCapUSD"], eth_floor_cap: asset["floorCapETH"],
                     variation: asset["variationETH"], opensea_url: opensea_url)
           sales_data = asset["salesData"]
           h = nft.nft_histories.where(event_date: Date.yesterday).first_or_create
-          bchp = cal_bchp(nft)
-          if h.bchp_12h.present?
-            h.update(bchp: bchp, bchp_12h: h.bchp)
-          else
-            h.update(bchp_12h: bchp)
-          end
+          cal_bchp(nft, h)
           h.update(floor_price: asset["floorPriceUSD"], eth_floor_price: asset["floorPriceETH"], sales: sales_data["numberSales24h"],
                   volume: sales_data["sales24hVolumeUSD"], eth_volume: sales_data["sales24hVolumeETH"])
         end
@@ -72,11 +67,16 @@ class NftHistoryService
       end
     end
 
-    def cal_bchp(nft)
+    def cal_bchp(nft, h)
       bchp_nft_ids = Nft.where(is_marked: true).pluck(:id) - [nft.id]
       bchp_owner_ids = OwnerNft.where(nft_id: bchp_nft_ids).pluck(:owner_id).uniq
       bchp_owners = nft.total_owners.where(owner_id: bchp_owner_ids)
       bchp = nft.total_owners.size == 0 ? 0 : (bchp_owners.size / nft.total_owners.size.to_f) * 100
+      bchp_6h = $redis.get("bchp_#{nft.id}") || h.bchp
+      bchp_12h = $redis.get("bchp_#{nft.id}_6h") || h.bchp_6h
+      h.update(bchp: bchp, bchp_6h: bchp_6h, bchp_12h: bchp_12h)
+      $redis.set("bchp_#{nft.id}", bchp)
+      $redis.set("bchp_#{nft.id}_6h", bchp_6h)
     end
 
     def get_data_from_trades(nft_id)

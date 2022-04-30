@@ -70,13 +70,8 @@ class Nft < ApplicationRecord
         result = data["stats"]
 
         self.update(total_supply: result["count"], total_volume: result["total_volume"], eth_floor_cap: result["market_cap"], variation: 0)
-        bchp = NftHistoryService.cal_bchp(self)
         h = nft_histories.where(event_date: Date.yesterday).first_or_create
-        if h.bchp.present?
-          h.bchp_6h.present? ? h.update(bchp: bchp, bchp_6h: h.bchp, bchp_12h: h.bchp_6h) : h.update(bchp: bchp, bchp_6h: h.bchp)
-        else
-          h.update(bchp: bchp)
-        end
+        NftHistoryService.cal_bchp(self, h)
         h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"])
       end
     rescue => e
