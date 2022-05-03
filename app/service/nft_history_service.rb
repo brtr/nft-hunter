@@ -1,4 +1,5 @@
 require 'open-uri'
+require 'nokogiri'
 
 class NftHistoryService
   class << self
@@ -18,7 +19,7 @@ class NftHistoryService
           next if slug.blank? || nft.blank?
           nft.update(total_supply: asset["totalSupply"]) unless except_nfts.include?(slug)
           listed_ratio = asset["listedRatio"].to_f
-          listed = listed_ratio == 0 ? 0 : nft.total_supply / listed_ratio
+          listed = fetch_listed_from_opensea(nft.opensea_slug)
           opensea_url = "https://opensea.io/collection/#{nft.opensea_slug}"
 
           nft.update(listed_ratio: listed_ratio, listed: listed, floor_cap: asset["floorCapUSD"], eth_floor_cap: asset["floorCapETH"],
@@ -134,6 +135,17 @@ class NftHistoryService
         end
       else
         puts "No Transfers!"
+      end
+    end
+
+    def fetch_listed_from_opensea(slug, mode="manual")
+      begin
+        response = URI.open("https://opensea.io/collection/#{slug}?search[sortAscending]=true&search[sortBy]=PRICE&search[toggles][0]=BUY_NOW").read
+        doc = Nokogiri::HTML(response)
+        doc.css("p.bDmNxz").first.text.split(" ")[0].gsub(/[^\d\.]/, '').to_f
+      rescue => e
+        FetchDataLog.create(fetch_type: mode, source: "Fetch listed", url: url, error_msgs: e, event_time: DateTime.now)
+        puts "Fetch opensea Error: #{e}"
       end
     end
   end

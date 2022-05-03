@@ -68,8 +68,8 @@ class Nft < ApplicationRecord
       if response
         data = JSON.parse(response)
         result = data["stats"]
-
-        self.update(total_supply: result["count"], total_volume: result["total_volume"], eth_floor_cap: result["market_cap"], variation: 0)
+        listed = NftHistoryService.fetch_listed_from_opensea(opensea_slug)
+        self.update(total_supply: result["count"], total_volume: result["total_volume"], eth_floor_cap: result["market_cap"], variation: 0, listed: listed)
         h = nft_histories.where(event_date: Date.yesterday).first_or_create
         NftHistoryService.cal_bchp(self, h)
         h.update(eth_floor_price: result["floor_price"], eth_volume: result["one_day_volume"], sales: result["one_day_sales"])

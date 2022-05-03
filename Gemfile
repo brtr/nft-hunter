@@ -28,6 +28,7 @@ gem 'grape'
 gem 'rack-cors'
 gem 'ransack'
 gem 'acts_as_paranoid'
+gem 'nokogiri'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.4', require: false

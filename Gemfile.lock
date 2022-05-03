@@ -441,6 +441,7 @@ DEPENDENCIES
   grape
   kaminari
   listen (~> 3.3)
+  nokogiri
   pg (~> 1.1)
   pry-rails
   puma (~> 5.0)
