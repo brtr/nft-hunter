@@ -10,11 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_25_094536) do
+ActiveRecord::Schema.define(version: 2022_05_03_071315) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
+
+  create_table "analysis_nft_holders", force: :cascade do |t|
+    t.string "token_name"
+    t.string "token_address"
+    t.string "holder_address"
+    t.decimal "amount"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["holder_address"], name: "index_analysis_nft_holders_on_holder_address"
+    t.index ["token_address", "holder_address"], name: "index_analysis_nft_holders_on_token_and_holder_address", unique: true
+    t.index ["token_address"], name: "index_analysis_nft_holders_on_token_address"
+  end
+
+  create_table "analysis_token_holders", force: :cascade do |t|
+    t.string "token_name"
+    t.string "token_address"
+    t.string "holder_address"
+    t.decimal "amount"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["holder_address"], name: "index_analysis_token_holders_on_holder_address"
+    t.index ["token_address", "holder_address"], name: "index_analysis_token_holders_on_token_and_holder_address", unique: true
+    t.index ["token_address"], name: "index_analysis_token_holders_on_token_address"
+  end
 
   create_table "fetch_data_logs", force: :cascade do |t|
     t.integer "fetch_type"
