@@ -139,10 +139,11 @@ class NftHistoryService
     end
 
     def fetch_listed_from_opensea(slug, mode="manual")
+      url = "https://opensea.io/collection/#{slug}?search[sortAscending]=true&search[sortBy]=PRICE&search[toggles][0]=BUY_NOW"
       begin
-        response = URI.open("https://opensea.io/collection/#{slug}?search[sortAscending]=true&search[sortBy]=PRICE&search[toggles][0]=BUY_NOW").read
+        response = URI.open(url).read
         doc = Nokogiri::HTML(response)
-        doc.css("p.bDmNxz").first.text.split(" ")[0].gsub(/[^\d\.]/, '').to_f
+        doc.css("p.kejuyj").first.text.split(" ")[0].gsub(/[^\d\.]/, '').to_f
       rescue => e
         FetchDataLog.create(fetch_type: mode, source: "Fetch listed", url: url, error_msgs: e, event_time: DateTime.now)
         puts "Fetch opensea Error: #{e}"
