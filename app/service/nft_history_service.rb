@@ -117,8 +117,10 @@ class NftHistoryService
       end
     end
 
-    def fetch_flip_data(nft, mode="manual")
-      url = "https://api.opensea.io/api/v1/events?&asset_contract_address=#{nft.address}&event_type=successful&occurred_after=#{Time.now.at_beginning_of_day.to_i}"
+    def fetch_flip_data(nft: nil, start_at: nil, mode: "manual", cursor: nil)
+      start_at ||= Time.now.at_beginning_of_day.to_i
+      url = "https://api.opensea.io/api/v1/events?&asset_contract_address=#{nft.address}&event_type=successful&occurred_after=#{start_at}"
+      url += "&cursor=#{cursor}" if cursor
       begin
         response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
         if response
@@ -126,7 +128,7 @@ class NftHistoryService
           events = data["asset_events"]
           events.each do |event|
             asset = event["asset"]
-            next if asset["num_sales"] < 2
+            next if asset.nil? || asset["num_sales"] < 2
             seller = event["seller"]["address"]
             cost = fetch_opensea_events(nft.address, asset["token_id"], seller, mode)
             next unless cost.to_f > 0
@@ -136,10 +138,12 @@ class NftHistoryService
             r = nft.nft_flip_records.where(slug: nft.opensea_slug, token_address: nft.address, token_id: asset["token_id"], txid: event["transaction"]["transaction_hash"]).first_or_create
             r.update(price: price, cost: cost, revenue: revenue.round(2), roi: roi.round(2), trade_time: event["created_date"], from_address: seller, to_address: event["winner_account"]["address"])
           end
+
+          fetch_flip_data(nft: nft, start_at: start_at, mode: mode, cursor: data["next"]) if data["next"].present?
         end
       rescue => e
         FetchDataLog.create(fetch_type: mode, source: "Fetch flip data", url: url, error_msgs: e, event_time: DateTime.now)
-        puts "Fetch moralis Error: #{e}"
+        puts "Fetch opensea Error: #{e}"
       end
     end
 
