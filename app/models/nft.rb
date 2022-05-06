@@ -8,8 +8,9 @@ class Nft < ApplicationRecord
   has_many :target_nft_owner_histories, autosave: true
   has_many :nft_trades, autosave: true
   has_many :nft_transfers, autosave: true
+  has_many :nft_flip_records, autosave: true
 
-  validates :slug, presence: true, uniqueness: true
+  validates :slug, uniqueness: true, allow_nil: true
 
   def fetch_pricefloor_histories
     response = URI.open("https://api-bff.nftpricefloor.com/nft/#{slug}/chart/pricefloor?interval=all", {read_timeout: 20}).read rescue nil

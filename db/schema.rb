@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_05_03_071315) do
+ActiveRecord::Schema.define(version: 2022_05_06_083730) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -96,6 +96,29 @@ ActiveRecord::Schema.define(version: 2022_05_03_071315) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["event_date"], name: "index_holding_rank_snap_shots_on_event_date"
+  end
+
+  create_table "nft_flip_records", force: :cascade do |t|
+    t.integer "nft_id"
+    t.string "slug"
+    t.string "token_address"
+    t.string "token_id"
+    t.string "from_address"
+    t.string "to_address"
+    t.string "txid"
+    t.decimal "price"
+    t.decimal "cost"
+    t.decimal "revenue"
+    t.decimal "roi"
+    t.datetime "trade_time"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["nft_id", "token_id"], name: "index_nft_flip_records_on_nft_id_and_token_id"
+    t.index ["nft_id"], name: "index_nft_flip_records_on_nft_id"
+    t.index ["slug"], name: "index_nft_flip_records_on_slug"
+    t.index ["token_address"], name: "index_nft_flip_records_on_token_address"
+    t.index ["trade_time"], name: "index_nft_flip_records_on_trade_time"
+    t.index ["txid"], name: "index_nft_flip_records_on_txid"
   end
 
   create_table "nft_histories", force: :cascade do |t|

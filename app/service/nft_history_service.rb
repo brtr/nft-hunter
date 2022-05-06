@@ -79,7 +79,9 @@ class NftHistoryService
           next if r["value"].to_f == 0 || r["contract_type"] != "ERC721" || r["from_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || r["to_address"].in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
           result.push(r)
         end
-        if data["cursor"].present?
+
+        size = data["page_size"].to_i * data["page"].to_i + 501
+        if data["cursor"].present? && data["total"].to_f > size
           get_data_from_transfers(cursor: data["cursor"], mode: mode, result: result, to_block: to_block)
         else
           return result
@@ -112,6 +114,48 @@ class NftHistoryService
       rescue => e
         FetchDataLog.create(fetch_type: mode, source: "Fetch listed", url: url, error_msgs: e, event_time: DateTime.now)
         puts "Fetch opensea Error: #{e}"
+      end
+    end
+
+    def fetch_flip_data(nft, mode="manual")
+      url = "https://api.opensea.io/api/v1/events?&asset_contract_address=#{nft.address}&event_type=successful&occurred_after=#{Time.now.at_beginning_of_day.to_i}"
+      begin
+        response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
+        if response
+          data = JSON.parse(response)
+          events = data["asset_events"]
+          events.each do |event|
+            asset = event["asset"]
+            next if asset["num_sales"] < 2
+            seller = event["seller"]["address"]
+            cost = fetch_opensea_events(nft.address, asset["token_id"], seller, mode)
+            next unless cost.to_f > 0
+            price = event["total_price"].to_f / 10**18
+            revenue = price - cost
+            roi = revenue / cost
+            r = nft.nft_flip_records.where(slug: nft.opensea_slug, token_address: nft.address, token_id: asset["token_id"], txid: event["transaction"]["transaction_hash"]).first_or_create
+            r.update(price: price, cost: cost, revenue: revenue.round(2), roi: roi.round(2), trade_time: event["created_date"], from_address: seller, to_address: event["winner_account"]["address"])
+          end
+        end
+      rescue => e
+        FetchDataLog.create(fetch_type: mode, source: "Fetch flip data", url: url, error_msgs: e, event_time: DateTime.now)
+        puts "Fetch moralis Error: #{e}"
+      end
+    end
+
+    def fetch_opensea_events(token_address, token_id, user_address, mode="manual")
+      begin
+        url = "https://api.opensea.io/api/v1/events?token_id=#{token_id}&asset_contract_address=#{token_address}&event_type=successful&account_address=#{user_address}"
+        response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
+        if response
+          data = JSON.parse(response)
+          events = data["asset_events"]
+          e = events.select{|e| e["winner_account"]["address"] == user_address}.first
+          return e["total_price"].to_f / 10**18 if e
+        end
+      rescue => e
+        FetchDataLog.create(fetch_type: mode, source: "Sync Opensea Events", url: url, error_msgs: e, event_time: DateTime.now)
+        puts "Fetch opensea Error: #{name} can't sync events"
       end
     end
   end
