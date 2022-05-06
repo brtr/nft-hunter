@@ -29,7 +29,10 @@ gem 'rack-cors'
 gem 'ransack'
 gem 'acts_as_paranoid'
 gem 'nokogiri'
-
+gem "webdrivers", require: false
+gem 'capybara'
+gem 'capybara-selenium'
+gem 'selenium-webdriver', require: false
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.4', require: false
 
@@ -63,10 +66,10 @@ end
 
 group :test do
   # Adds support for Capybara system testing and selenium driver
-  gem 'capybara', '>= 3.26'
-  gem 'selenium-webdriver'
+  #gem 'capybara', '>= 3.26'
+  #gem 'selenium-webdriver'
   # Easy installation and use of web drivers to run system tests with browsers
-  gem 'webdrivers'
+  #gem 'webdrivers'
   gem 'cucumber-rails', '~> 2.4', require: false
   gem 'simplecov', '~> 0.21.2'
   gem 'database_rewinder'
