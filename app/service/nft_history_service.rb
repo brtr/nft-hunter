@@ -121,34 +121,30 @@ class NftHistoryService
       start_at ||= Time.now.at_beginning_of_day.to_i
       url = "https://api.opensea.io/api/v1/events?&asset_contract_address=#{nft.address}&event_type=successful&occurred_after=#{start_at}"
       url += "&cursor=#{cursor}" if cursor
-      begin
-        response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
-        if response
-          data = JSON.parse(response)
-          events = data["asset_events"]
-          events.each do |event|
-            asset = event["asset"]
-            next if asset.nil? || asset["num_sales"] < 2
-            seller = event["seller"]["address"]
-            cost = fetch_opensea_events(nft.address, asset["token_id"], seller, mode)
-            next unless cost.to_f > 0
-            price = event["total_price"].to_f / 10**18
-            revenue = price - cost
-            roi = revenue / cost
-            r = nft.nft_flip_records.where(slug: nft.opensea_slug, token_address: nft.address, token_id: asset["token_id"], txid: event["transaction"]["transaction_hash"]).first_or_create
-            r.update(price: price, cost: cost, revenue: revenue.round(2), roi: roi.round(2), trade_time: event["created_date"], from_address: seller, to_address: event["winner_account"]["address"])
-          end
-
-          sleep 1
-          fetch_flip_data(nft: nft, start_at: start_at, mode: mode, cursor: data["next"]) if data["next"].present?
+      # begin
+      response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
+      if response
+        data = JSON.parse(response)
+        events = data["asset_events"]
+        events.each do |event|
+          asset = event["asset"]
+          next if asset.nil? || asset["num_sales"] < 2 || asset["asset_contract"]["schema_name"] != "ERC721"
+          last_trade = fetch_opensea_events(nft.address, asset["token_id"], event["seller"]["address"], mode)
+          next unless last_trade.size > 0
+          update_flip_record(nft, last_trade, event, asset)
         end
-      rescue => e
-        FetchDataLog.create(fetch_type: mode, source: "Fetch flip data", url: url, error_msgs: e, event_time: DateTime.now)
-        puts "Fetch opensea Error: #{e}"
+
+        sleep 1
+        fetch_flip_data_by_nft(nft: nft, start_at: start_at, mode: mode, cursor: data["next"]) if data["next"].present?
       end
+      # rescue => e
+      #   FetchDataLog.create(fetch_type: mode, source: "Fetch flip data", url: url, error_msgs: e, event_time: DateTime.now)
+      #   puts "Fetch opensea Error: #{e}"
+      # end
     end
 
     def fetch_opensea_events(token_address, token_id, user_address, mode="manual")
+      result = {}
       sleep 1
       begin
         url = "https://api.opensea.io/api/v1/events?token_id=#{token_id}&asset_contract_address=#{token_address}&event_type=successful&account_address=#{user_address}"
@@ -157,7 +153,13 @@ class NftHistoryService
           data = JSON.parse(response)
           events = data["asset_events"]
           e = events.select{|e| e["winner_account"]["address"] == user_address}.first
-          return e["total_price"].to_f / 10**18 if e
+          if e
+            payment = e["payment_token"]
+            cost = e["total_price"].to_f / 10 ** payment["decimals"].to_i
+            cost_usd = cost * payment["usd_price"].to_f
+            result = {bought_coin: payment["symbol"], cost: cost, cost_usd: cost_usd, from_address: e["seller"]["address"], trade_time: e["created_date"]}
+          end
+          return result
         end
       rescue => e
         FetchDataLog.create(fetch_type: mode, source: "Sync Opensea Events", url: url, error_msgs: e, event_time: DateTime.now)
@@ -176,17 +178,12 @@ class NftHistoryService
           events = data["asset_events"]
           events.each do |event|
             asset = event["asset"]
-            next if asset.nil? || asset["num_sales"] < 2
-            seller = event["seller"]["address"]
+            next if asset.nil? || asset["num_sales"] < 2 || asset["asset_contract"]["schema_name"] != "ERC721"
             token_address = asset["asset_contract"]["address"]
-            cost = fetch_opensea_events(token_address, asset["token_id"], seller, mode)
-            next unless cost.to_f > 0
+            last_trade = fetch_opensea_events(token_address, asset["token_id"], event["seller"]["address"], mode)
+            next unless last_trade.size > 0
             nft = Nft.where(address: token_address, opensea_slug: asset["collection"]["slug"]).first_or_create
-            price = event["total_price"].to_f / 10**18
-            revenue = price - cost
-            roi = revenue / cost
-            r = nft.nft_flip_records.where(slug: nft.opensea_slug, token_address: token_address, token_id: asset["token_id"], txid: event["transaction"]["transaction_hash"]).first_or_create
-            r.update(price: price, cost: cost, revenue: revenue.round(2), roi: roi.round(2), trade_time: event["created_date"], from_address: seller, to_address: event["winner_account"]["address"])
+            update_flip_record(nft, last_trade, event, asset)
           end
 
           sleep 1
@@ -196,6 +193,21 @@ class NftHistoryService
         FetchDataLog.create(fetch_type: mode, source: "Fetch flip data", url: url, error_msgs: e, event_time: DateTime.now)
         puts "Fetch opensea Error: #{e}"
       end
+    end
+
+    private
+    def update_flip_record(nft, last_trade, event, asset)
+      payment = event["payment_token"]
+      price = event["total_price"].to_f / 10 ** payment["decimals"].to_i
+      price_usd = price * payment["usd_price"].to_f
+      cost_usd = last_trade[:cost_usd]
+      revenue = price_usd - cost_usd
+      roi = cost_usd == 0 ? 0 : revenue / cost_usd
+      gap = DateTime.parse(event["created_date"]).to_i - DateTime.parse(last_trade[:trade_time]).to_i
+      r = nft.nft_flip_records.where(slug: nft.opensea_slug, token_address: asset["asset_contract"]["address"], token_id: asset["token_id"], txid: event["transaction"]["transaction_hash"]).first_or_create
+      r.update( price: price, price_usd: price_usd, cost: last_trade[:cost], cost_usd: cost_usd, revenue: revenue.round(3), roi: roi.round(3), gap: gap,
+                sold_time: event["created_date"], bought_time: last_trade[:trade_time], sold_coin: payment["symbol"], bought_coin: last_trade[:bought_coin],
+                from_address: last_trade[:from_address], fliper_address: event["seller"]["address"], to_address: event["winner_account"]["address"])
     end
   end
 end
