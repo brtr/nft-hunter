@@ -16,6 +16,7 @@ Rails.application.routes.draw do
 
   resources :holding_rank_snap_shots, only: [:index, :show]
   resources :nft_snap_shots, only: [:index, :show]
+  resources :nft_flip_records, only: :index
 
   post 'login', to: "users#login", as: :login
   post 'logout', to: "users#logout", as: :logout
