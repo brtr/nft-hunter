@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_05_09_055528) do
+ActiveRecord::Schema.define(version: 2022_05_10_071140) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -106,8 +106,8 @@ ActiveRecord::Schema.define(version: 2022_05_09_055528) do
     t.string "from_address"
     t.string "to_address"
     t.string "txid"
-    t.decimal "price"
-    t.decimal "cost"
+    t.decimal "sold"
+    t.decimal "bought"
     t.decimal "revenue"
     t.decimal "roi"
     t.datetime "created_at", precision: 6, null: false
@@ -115,8 +115,8 @@ ActiveRecord::Schema.define(version: 2022_05_09_055528) do
     t.string "fliper_address"
     t.string "bought_coin"
     t.string "sold_coin"
-    t.decimal "cost_usd"
-    t.decimal "price_usd"
+    t.decimal "bought_usd"
+    t.decimal "sold_usd"
     t.integer "gap"
     t.datetime "sold_time"
     t.datetime "bought_time"

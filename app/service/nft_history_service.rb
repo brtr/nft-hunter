@@ -206,7 +206,7 @@ class NftHistoryService
       roi = cost_usd == 0 ? 0 : revenue / cost_usd
       gap = DateTime.parse(event["created_date"]).to_i - DateTime.parse(last_trade[:trade_time]).to_i
       r = nft.nft_flip_records.where(slug: nft.opensea_slug, token_address: asset["asset_contract"]["address"], token_id: asset["token_id"], txid: event["transaction"]["transaction_hash"]).first_or_create
-      r.update( price: price, price_usd: price_usd, cost: last_trade[:cost], cost_usd: cost_usd, revenue: revenue.round(3), roi: roi.round(3), gap: gap, image: asset["image_url"],
+      r.update( sold: price, sold_usd: price_usd, bought: last_trade[:cost], bought_usd: cost_usd, revenue: revenue.round(3), roi: roi.round(3), gap: gap, image: asset["image_url"],
                 sold_time: event["created_date"], bought_time: last_trade[:trade_time], sold_coin: payment["symbol"], bought_coin: last_trade[:bought_coin],
                 from_address: last_trade[:from_address], fliper_address: event["seller"]["address"], to_address: event["winner_account"]["address"])
     end

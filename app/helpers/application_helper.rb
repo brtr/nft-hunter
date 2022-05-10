@@ -9,6 +9,7 @@ module ApplicationHelper
   end
 
   def address_format(address)
+    address = address.dup
     address[6...-4] = "...."
     address
   end

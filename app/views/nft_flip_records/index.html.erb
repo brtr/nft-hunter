@@ -1,31 +1,154 @@
 <div class="sidebar-enabled sidebar-end">
-  <div class="container">
-    <div class="row">
-      <% @records.each do |record| %>
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="mb-0"><%= "#{address_format(record.fliper_address)} * #{record.slug} ##{record.token_id}" %></h3>
-            </div>
-            <div class="card-body">
-              <p class="card-text"><%= "Bought from #{address_format(record.from_address)} for #{decimal_format record.cost} #{record.bought_coin} ($#{decimal_format record.cost_usd}) at #{time_format record.bought_time}" %></p>
-              <p class="card-text"><%= "Sold to #{address_format(record.to_address)} for #{decimal_format record.price} #{record.sold_coin} ($#{decimal_format record.price_usd}) at #{time_format record.sold_time}" %></p>
-              <p class="card-text"><%= "Gap: #{ActiveSupport::Duration.build(record.gap).inspect}" %></p>
-              <p class="card-text">
-                <%= "Revenue: $#{decimal_format record.revenue} (#{decimal_format record.roi * 100}%)" %>
-                <%= " #{decimal_format record.revenue_eth} ETH (#{decimal_format record.roi_eth * 100}%)" if record.is_eth_payment? %>
-              </p>
-              <%= link_to "Detail", "https://opensea.io/assets/#{record.nft.address}/#{record.token_id}", class: "card-link", target: "_blank" %>
-            </div>
-            <div class="card-footer">
-              <%= image_tag record.image, class: "card-img-top" if record.image %>
+  <div class="container py-4 mb-2 mb-sm-0 pb-sm-5 row mx-xl-auto">
+    <div class="col-6 mb-5">
+      <div class="row">
+        <% @records.each do |record| %>
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="mb-0"><%= "#{address_format(record.fliper_address)} * #{record.slug} ##{record.token_id}" %></h3>
+              </div>
+              <div class="card-body">
+                <p class="card-text"><%= "Bought from #{address_format(record.from_address)} for #{decimal_format record.bought} #{record.bought_coin} ($#{decimal_format record.bought_usd}) at #{time_format record.bought_time}" %></p>
+                <p class="card-text"><%= "Sold to #{address_format(record.to_address)} for #{decimal_format record.sold} #{record.sold_coin} ($#{decimal_format record.sold_usd}) at #{time_format record.sold_time}" %></p>
+                <p class="card-text"><%= "Gap: #{ActiveSupport::Duration.build(record.gap).inspect}" %></p>
+                <p class="card-text">
+                  <%= "Revenue: $#{decimal_format record.revenue} (#{decimal_format record.roi * 100}%)" %>
+                  <%= " #{decimal_format record.revenue_eth} ETH (#{decimal_format record.roi_eth * 100}%)" if record.is_eth_payment? %>
+                </p>
+                <%= link_to "Detail", "https://opensea.io/assets/#{record.nft.address}/#{record.token_id}", class: "card-link", target: "_blank" %>
+              </div>
+              <div class="card-footer">
+                <%= image_tag record.image, class: "card-img-top" if record.image %>
+              </div>
             </div>
           </div>
-        </div>
-      <% end %>
+        <% end %>
+      </div>
+      <div class="p-4">
+        <%= paginate @records %>
+      </div>
     </div>
-    <div class="p-4">
-      <%= paginate @records %>
+    <div class="col-5 ms-5">
+      <div class="row">
+        <h3>Top 10 Fliper</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Fliper</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @top_flipers.each_with_index do |fliper, idx| %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td><%= address_format fliper[0] %></td>
+                <td><%= fliper[1] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <h3 class="mt-4">Last 10 Fliper</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Fliper</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @last_flipers.each_with_index do |fliper, idx| %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td><%= address_format fliper[0] %></td>
+                <td><%= fliper[1] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <h3 class="mt-4">Top 10 Collection</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Collection</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @top_collections.each_with_index do |collection, idx| %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td><%= collection[0] %></td>
+                <td><%= collection[1] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <h3 class="mt-4">Last 10 Collection</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Collection</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @last_collections.each_with_index do |collection, idx| %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td><%= collection[0] %></td>
+                <td><%= collection[1] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="settings js-settings">
+  <div class="settings-toggle">
+    <div class="settings-toggle-option settings-toggle-option-text js-settings-toggle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders align-middle"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+      Filters
+    </div>
+  </div>
+  <div class="settings-panel">
+    <div class="settings-content">
+      <!-- Search-->
+      <div class="settings-title d-flex align-items-center">
+        <button type="button" class="btn-close float-right js-settings-toggle" aria-label="Close"></button>
+        <h4 class="mb-0 ms-2 d-inline-block">Filter</h4>
+      </div>
+      <div class="settings-body">
+        <%= search_form_for @q, url: nft_flip_records_path, method: :get do |f| %>
+          <div class="mb-3 pb-1 col-12">
+            <%= f.label :slug, "NFT", class: "form-label d-block px-0" %>
+            <%= f.text_field :slug_eq, class: "form-control inline-form" %>
+          </div>
+          <div class="mb-3 pb-1 col-12">
+            <%= f.label :bought_time, "Bought Time", class: "form-label d-block px-0" %>
+            <%= f.date_field :bought_time_gteq, class: "form-control inline-form" %>
+            To
+            <%= f.date_field :bought_time_lteq, class: "form-control inline-form" %>
+          </div>
+          <div class="mb-3 pb-1 col-12">
+            <%= f.label :sold_time, "Sold Time", class: "form-label d-block px-0" %>
+            <%= f.date_field :sold_time_gteq, class: "form-control inline-form" %>
+            To
+            <%= f.date_field :sold_time_lteq, class: "form-control inline-form" %>
+          </div>
+          <div class="mb-3 pb-1">
+            <%= f.submit "Apply", class: 'btn btn-primary mt-3 mt-sm-0' %>
+            <%= link_to "Reset", nft_flip_records_path, class: 'btn btn-default' %>
+          </div>
+        <% end %>
+      </div>
     </div>
   </div>
 </div>
