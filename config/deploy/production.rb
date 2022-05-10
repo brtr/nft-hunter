@@ -1,4 +1,2 @@
-server "34.235.134.215", user: "deploy", roles: %w(web)
-server "3.234.236.191", user: "deploy", roles: %w(job)
-server "3.230.144.56", user: "deploy", roles: %w(job)
-server "44.192.108.73", user: "deploy", roles: %w(job)
+server "18.232.121.37", user: "deploy", roles: %w(web)
+server "54.145.39.228", user: "deploy", roles: %w(job)
