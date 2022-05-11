@@ -2,7 +2,7 @@ class NftFlipRecordsController < ApplicationController
   def index
     @page_index = 5
     @q = NftFlipRecord.includes(:nft).ransack(params[:q])
-    @records = @q.result.order(roi: :desc).page(params[:page]).per(10)
+    @records = @q.result.order(sold_time: :desc).page(params[:page]).per(10)
 
     fliper_records = NftFlipRecord.group(:fliper_address).count.sort_by{|k, v| v}
     @top_flipers = fliper_records.reverse.first(10)
