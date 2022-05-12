@@ -22,9 +22,6 @@
                 <p class="card-text"><%= "#{t("views.labels.gap")}: #{ActiveSupport::Duration.build(record.gap).parts.map { |unit, n| I18n.t unit, count: n, scope: 'duration' }.to_sentence}" %></p>
                 <%= link_to t("views.labels.detail"), record.permalink, class: "card-link", target: "_blank" %>
               </div>
-              <div class="card-footer">
-                <%= image_tag record.image, class: "card-img-top" if record.image %>
-              </div>
             </div>
           </div>
         <% end %>
