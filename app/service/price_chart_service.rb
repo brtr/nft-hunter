@@ -3,7 +3,7 @@ class PriceChartService
 
   def initialize(start_date: nil, end_date: nil, nft_id: nil, fliper_address: nil)
     @start_date = start_date
-    @end_date = end_date || Date.yesterday
+    @end_date = end_date || Date.today
     @nft_id = nft_id
     @fliper_address = fliper_address
   end
@@ -50,7 +50,9 @@ class PriceChartService
 
   def get_flip_count
     result = {}
-    NftFlipRecord.where(sold_time: [start_date.at_beginning_of_day..end_date.at_end_of_day]).group_by{|r| r.sold_time.to_date}.sort_by{|date, records| date}.each do |date, records|
+    records = NftFlipRecord.where(sold_time: [start_date.at_beginning_of_day..end_date.at_end_of_day])
+    records = records.where(fliper_address: fliper_address) if fliper_address
+    records.group_by{|r| r.sold_time.to_date}.sort_by{|date, records| date}.each do |date, records|
       result.merge!({date => {total_count: records.size, successful_count: records.count{|r| r.roi > 0}, failed_count: records.count{|r| r.roi <= 0}, date: date}})
     end
     result
