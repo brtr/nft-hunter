@@ -120,7 +120,7 @@ class NftHistoryService
     def fetch_flip_data_by_nft(nft: nil, start_at: nil, end_at: nil, mode: "manual", cursor: nil)
       start_at ||= Time.now.at_beginning_of_day.to_i
       end_at ||= Time.now.to_i
-      url = "https://api.opensea.io/api/v1/events?&asset_contract_address=#{nft.address}&event_type=successful&occurred_after=#{start_at}&occurred_before=#{end_at}"
+      url = "https://api.opensea.io/api/v1/events?collection_slug=#{nft.opensea_slug}&event_type=successful&occurred_after=#{start_at}&occurred_before=#{end_at}"
       url += "&cursor=#{cursor}" if cursor
       begin
         response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
@@ -129,14 +129,17 @@ class NftHistoryService
           events = data["asset_events"]
           events.each do |event|
             asset = event["asset"]
-            next if asset.nil? || asset["num_sales"] < 2 || asset["asset_contract"]["schema_name"] != "ERC721"
-            last_trade = fetch_last_trade(nft.address, asset["token_id"], event["seller"]["address"], mode)
+            schema_name = asset["asset_contract"]["schema_name"]
+            next if asset.nil? || asset["num_sales"] < 2 || !["ERC721", "METAPLEX"].include?(schema_name)
+            slug = asset["collection"]["slug"]
+            token_id = schema_name == "ERC721" ? asset["token_id"] : asset["name"].split("#").last
+            last_trade = fetch_last_trade(nft.address, event["seller"]["address"], slug, mode, token_id, schema_name)
             next unless last_trade.present?
             update_flip_record(nft, last_trade, event, asset)
           end
 
           sleep 1
-          fetch_flip_data_by_nft(nft: nft, start_at: start_at, mode: mode, cursor: data["next"]) if data["next"].present?
+          fetch_flip_data_by_nft(nft: nft, start_at: start_at, end_at: end_at, mode: mode, cursor: data["next"]) if data["next"].present?
         end
       rescue => e
         FetchDataLog.create(fetch_type: mode, source: "Fetch flip data", url: url, error_msgs: e, event_time: DateTime.now)
@@ -144,21 +147,31 @@ class NftHistoryService
       end
     end
 
-    def fetch_last_trade(token_address, token_id, user_address, mode="manual")
+    def fetch_last_trade(token_address, user_address, slug, mode="manual", token_id, schema_name)
       result = {}
       sleep 1
       begin
-        url = "https://api.opensea.io/api/v1/events?token_id=#{token_id}&asset_contract_address=#{token_address}&event_type=successful&account_address=#{user_address}"
+        if schema_name == "ERC721"
+          url = "https://api.opensea.io/api/v1/events?token_id=#{token_id}&asset_contract_address=#{token_address}&event_type=successful&account_address=#{user_address}"
+        else
+          url = "https://api.opensea.io/api/v1/events?collection_slug=#{slug}&event_type=successful&account_address=#{user_address}"
+        end
         response = URI.open(url, {"X-API-KEY" => ENV["OPENSEA_API_KEY"]}).read
         if response
           data = JSON.parse(response)
           events = data["asset_events"]
           e = events.select{|e| e["winner_account"]["address"] == user_address}.first
           if e
-            payment = e["payment_token"]
-            cost = e["total_price"].to_f / 10 ** payment["decimals"].to_i
-            cost_usd = cost * payment["usd_price"].to_f
-            result = {bought_coin: payment["symbol"], cost: cost, cost_usd: cost_usd, from_address: e["seller"]["address"], trade_time: e["created_date"]}
+            asset = e["asset"]
+            if asset["asset_contract"]["schema_name"] == "METAPLEX"
+              cost = e["total_price"].to_f / 10 ** 6
+              result = {bought_coin: "SOL", cost: cost, cost_usd: 0, from_address: e["seller"]["address"], trade_time: e["created_date"]}
+            else
+              payment = e["payment_token"]
+              cost = e["total_price"].to_f / 10 ** payment["decimals"].to_i
+              cost_usd = cost * payment["usd_price"].to_f
+              result = {bought_coin: payment["symbol"], cost: cost, cost_usd: cost_usd, from_address: e["seller"]["address"], trade_time: e["created_date"]}
+            end
           end
           return result
         end
@@ -180,17 +193,20 @@ class NftHistoryService
           events = data["asset_events"]
           events.each do |event|
             asset = event["asset"]
-            next if asset.nil? || asset["num_sales"] < 2 || asset["asset_contract"]["schema_name"] != "ERC721"
+            schema_name = asset["asset_contract"]["schema_name"] rescue ""
+            next if asset.nil? || asset["num_sales"] < 2 || !["ERC721", "METAPLEX"].include?(schema_name)
             token_address = asset["asset_contract"]["address"]
-            last_trade = fetch_last_trade(token_address, asset["token_id"], event["seller"]["address"], mode)
+            slug = asset["collection"]["slug"]
+            token_id = schema_name == "ERC721" ? asset["token_id"] : asset["name"].split("#").last
+            last_trade = fetch_last_trade(token_address, event["seller"]["address"], slug, mode, token_id, schema_name)
             next unless last_trade.present?
             puts "last trade: #{last_trade}"
-            nft = Nft.where(address: token_address, opensea_slug: asset["collection"]["slug"]).first_or_create
+            nft = Nft.where(address: token_address, opensea_slug: slug).first_or_create
             update_flip_record(nft, last_trade, event, asset)
           end
 
           sleep 1
-          fetch_flip_data(start_at: start_at, mode: mode, cursor: data["next"]) if data["next"].present?
+          fetch_flip_data(start_at: start_at, end_at: end_at, mode: mode, cursor: data["next"]) if data["next"].present?
         end
       rescue => e
         FetchDataLog.create(fetch_type: mode, source: "Fetch flip data", url: url, error_msgs: e, event_time: DateTime.now)
@@ -200,16 +216,24 @@ class NftHistoryService
 
     private
     def update_flip_record(nft, last_trade, event, asset)
-      payment = event["payment_token"]
-      price = event["total_price"].to_f / 10 ** payment["decimals"].to_i
-      price_usd = price * payment["usd_price"].to_f
+      if last_trade[:bought_coin] == "SOL"
+        price = event["total_price"].to_f / 10 ** 6
+        price_usd = 0
+        sold_coin = last_trade[:bought_coin]
+      else
+        payment = event["payment_token"]
+        price = event["total_price"].to_f / 10 ** payment["decimals"].to_i
+        price_usd = price * payment["usd_price"].to_f
+        sold_coin = payment["symbol"]
+      end
       cost_usd = last_trade[:cost_usd]
+
       revenue = price_usd - cost_usd
       roi = cost_usd == 0 ? 0 : revenue / cost_usd
       gap = DateTime.parse(event["created_date"]).to_i - DateTime.parse(last_trade[:trade_time]).to_i
       r = nft.nft_flip_records.where(slug: nft.opensea_slug, token_address: asset["asset_contract"]["address"], token_id: asset["token_id"], txid: event["transaction"]["transaction_hash"]).first_or_create
       r.update( sold: price, sold_usd: price_usd, bought: last_trade[:cost], bought_usd: cost_usd, revenue: revenue.round(3), roi: roi.round(3), gap: gap, image: asset["image_url"],
-                sold_time: event["created_date"], bought_time: last_trade[:trade_time], sold_coin: payment["symbol"], bought_coin: last_trade[:bought_coin],
+                sold_time: event["created_date"], bought_time: last_trade[:trade_time], sold_coin: sold_coin, bought_coin: last_trade[:bought_coin], permalink: asset["permalink"],
                 from_address: last_trade[:from_address], fliper_address: event["seller"]["address"], to_address: event["winner_account"]["address"])
     end
   end

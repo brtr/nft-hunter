@@ -20,9 +20,9 @@
     <div class="col-4 mb-5">
       <div class="card" style="height: 130px">
         <div class="card-body">
+          <p class="card-text"><%= "#{t("views.labels.revenue")}: "%> <span class="float-end text-<%= change_text_color(@collection_data.sum(&:crypto_revenue).to_f) %>"><%= "#{decimal_format @collection_data.sum(&:crypto_revenue)} #{@collection_data.first.sold_coin}" %></p>
           <p class="card-text"><%= "#{t("views.labels.profit")}: " %> <span class="float-end text-<%= change_text_color(@collection_data.successful.sum(&:crypto_revenue).to_f) %>"><%= "#{decimal_format @collection_data.successful.sum(&:crypto_revenue)} #{@collection_data.first.sold_coin}" %></p>
           <p class="card-text"><%= "#{t("views.labels.loss")}: " %> <span class="float-end text-<%= change_text_color(@collection_data.failed.sum(&:crypto_revenue).to_f) %>"><%= "#{decimal_format @collection_data.failed.sum(&:crypto_revenue)} #{@collection_data.first.sold_coin}" %></p>
-          <p class="card-text"><%= "#{t("views.labels.revenue")}: "%> <span class="float-end text-<%= change_text_color(@collection_data.sum(&:crypto_revenue).to_f) %>"><%= "#{decimal_format @collection_data.sum(&:crypto_revenue)} #{@collection_data.first.sold_coin}" %></p>
         </div>
       </div>
     </div>
@@ -37,7 +37,7 @@
     </thead>
     <% @top_flipers.each do |nft| %>
       <tr>
-        <td><%= nft[0] %></td>
+        <td><%= link_to nft[0], fliper_detail_nft_flip_records_path(fliper_address: nft[0]) %></td>
         <td class="text-<%= change_text_color(nft[2].to_f) %>"><%= "#{decimal_format nft[2]} #{nft[3]}" %></td>
       </tr>
     <% end %>

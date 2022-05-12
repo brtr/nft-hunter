@@ -58,7 +58,7 @@ class PriceChartService
     records = records.where(fliper_address: fliper_address) if fliper_address
     records = records.where(slug: slug) if slug
     records.group_by{|r| r.sold_time.to_date}.sort_by{|date, records| date}.each do |date, records|
-      result.merge!({date => {total_count: records.size, successful_count: records.count{|r| r.roi > 0}, failed_count: records.count{|r| r.roi <= 0}, date: date}})
+      result.merge!({date => {total_count: records.size, successful_count: records.count{|n| n.roi > 0 || n.crypto_roi > 0}, failed_count: records.count{|n| n.roi < 0 || n.crypto_roi < 0}, date: date}})
     end
     result
   end
