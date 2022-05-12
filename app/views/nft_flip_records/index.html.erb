@@ -86,7 +86,7 @@
             <% @top_collections.each_with_index do |collection, idx| %>
               <tr>
                 <td><%= idx + 1 %></td>
-                <td><%= collection[0] %></td>
+                <td><%= link_to collection[0], collection_detail_nft_flip_records_path(slug: collection[0]) %></td>
                 <td><%= collection[1] %></td>
               </tr>
             <% end %>
@@ -105,7 +105,7 @@
             <% @last_collections.each_with_index do |collection, idx| %>
               <tr>
                 <td><%= idx + 1 %></td>
-                <td><%= collection[0] %></td>
+                <td><%= link_to collection[0], collection_detail_nft_flip_records_path(slug: collection[0]) %></td>
                 <td><%= collection[1] %></td>
               </tr>
             <% end %>
