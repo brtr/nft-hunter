@@ -9,6 +9,10 @@ class NftFlipRecord < ApplicationRecord
     bought_coin.in?(ETH_PAYMENT) && sold_coin.in?(ETH_PAYMENT)
   end
 
+  def same_coin?
+    bought_coin == sold_coin || is_eth_payment?
+  end
+
   def crypto_revenue
     sold - bought
   end
@@ -18,10 +22,10 @@ class NftFlipRecord < ApplicationRecord
   end
 
   def self.successful
-    select{|n| n.roi > 0 || n.crypto_roi > 0}
+    select{|n| n.roi > 0 || n.same_coin? && n.crypto_roi > 0}
   end
 
   def self.failed
-    select{|n| n.roi < 0 || n.crypto_roi < 0}
+    select{|n| n.roi < 0 || n.same_coin? && n.crypto_roi < 0}
   end
 end
