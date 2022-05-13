@@ -3,31 +3,39 @@
 </div>
 
 <script>
-function dynamicColors() {
-        var r = Math.floor(Math.random() * 255);
-        var g = Math.floor(Math.random() * 255);
-        var b = Math.floor(Math.random() * 255);
-        return "rgba(" + r + "," + g + "," + b + ", 0.5)";
-    }
 document.addEventListener('turbolinks:load', () => {
   var canvas = document.getElementById('flipDataChart');
   if(canvas){
     const ctx = canvas.getContext('2d');
     const chart_data = JSON.parse(ctx.canvas.dataset.data)
     const flip_data = Object.values(chart_data)
-    const dataArray = flip_data.flat().map(i => {
-                        return {x: new Date(i[1]), y: i[0]}
-                      })
-    console.log("dataArray: ", dataArray);
+    const profitDataArray = flip_data.flat().map(i => {
+                              if (i[0] > 0){
+                                return {x: new Date(i[1]), y: i[0]}
+                              }
+                            })
+    const lossDataArray = flip_data.flat().map(i => {
+                            if (i[0] < 0){
+                              return {x: new Date(i[1]), y: i[0]}
+                            }
+                          })
+    console.log("loss: ", lossDataArray)
+
     new Chart(ctx, {
       type: 'scatter',
       data: {
         datasets: [
           {
-            label: "Flip 收益",
-            data: dataArray,
-            borderColor: dynamicColors(),
-            backgroundColor: dynamicColors()
+            label: "盈利",
+            data: profitDataArray.filter(Boolean),
+            borderColor: "rgb(75, 192, 192)",
+            backgroundColor: "rgba(75, 192, 192, 0.5)"
+          },
+          {
+            label: "亏损",
+            data: lossDataArray.filter(Boolean),
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: "rgba(255, 99, 132, 0.5)"
           }
         ],
       },

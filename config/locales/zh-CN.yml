@@ -30,6 +30,8 @@ zh-CN:
       failed_count: 亏损次数
       profit: 盈利
       loss: 亏损
+      price_notice: 买入价 / 卖出价 / 盈利
+      date_notice: 买入日期 - 卖出日期
   date:
     abbr_day_names:
     - 周日
@@ -107,8 +109,9 @@ zh-CN:
       year: 年
   duration:
     months: "%{count} 个月"
-    weeks: "%{count} 个星期"
-    hours: "%{count} 个小时"
+    weeks: "%{count} 周"
+    days: "%{count} 天"
+    hours: "%{count} 小时"
     minutes: "%{count} 分钟"
     seconds: "%{count} 秒"
   errors:

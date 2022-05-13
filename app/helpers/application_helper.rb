@@ -32,4 +32,8 @@ module ApplicationHelper
   def time_format(datetime)
     datetime.strftime("%Y-%m-%d %H:%M") rescue ''
   end
+
+  def date_format(datetime)
+    datetime.strftime("%Y-%m-%d") rescue ''
+  end
 end
