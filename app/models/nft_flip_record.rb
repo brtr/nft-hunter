@@ -1,4 +1,6 @@
 class NftFlipRecord < ApplicationRecord
+  include ApplicationHelper
+
   belongs_to :nft, touch: true
 
   scope :today, -> { where(sold_time: [Date.yesterday.at_beginning_of_day..Date.today.at_end_of_day]) }
@@ -19,6 +21,16 @@ class NftFlipRecord < ApplicationRecord
 
   def crypto_roi
     bought == 0 ? 0 : crypto_revenue / bought
+  end
+
+  def display_message
+    "
+    #{decimal_format bought} #{bought_coin} ($#{decimal_format bought_usd}) / #{decimal_format sold} #{sold_coin} ($#{decimal_format sold_usd}) / #{decimal_format crypto_revenue} #{sold_coin} ($#{decimal_format revenue})
+
+    #{date_format bought_time} - #{date_format sold_time}
+
+    #{I18n.t("views.labels.gap")}: #{ActiveSupport::Duration.build(gap).parts.except(:minutes, :seconds).map { |unit, n| I18n.t unit, count: n, scope: 'duration' }.to_sentence}
+    "
   end
 
   def self.successful
