@@ -43,9 +43,27 @@ class NftFlipRecordsController < ApplicationController
   private
   def get_data(data, type)
     if type == "top"
-      data.map{|k,v| [k, v.count{|n| n.roi > 0 || n.same_coin? && n.crypto_roi > 0}]}.sort_by{|r| r[1]}.reverse.first(10)
+      data.map do |k,v|
+        records = v.select{|n| n.roi > 0 || n.same_coin? && n.crypto_roi > 0}
+        next if records.blank?
+        [k, records.count, records.sum(&:revenue), get_average_price(records), records.first.sold_coin, get_average_gap(records)]
+      end.compact.sort_by{|r| r[1]}.reverse.first(10)
     else
-      data.map{|k,v| [k, v.count{|n| n.roi < 0 || n.same_coin? && n.crypto_roi < 0}]}.sort_by{|r| r[1]}.reverse.first(10)
+      data.map do |k,v|
+        records = v.select{|n| n.roi < 0 || n.same_coin? && n.crypto_roi < 0}
+        next if records.blank?
+        [k, records.count, records.sum(&:revenue), get_average_price(records), records.first.sold_coin, get_average_gap(records)]
+      end.compact.sort_by{|r| r[1]}.reverse.first(10)
     end
+  end
+
+  def get_average_price(records)
+    price_list = records.map{|r| [r.bought, r.sold]}.flatten
+    price_list.sum.to_f / price_list.size.to_f
+  end
+
+  def get_average_gap(records)
+    gaps = records.map(&:gap)
+    gaps.sum.to_f / gaps.size.to_f
   end
 end

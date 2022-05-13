@@ -30,8 +30,12 @@ zh-CN:
       failed_count: 亏损次数
       profit: 盈利
       loss: 亏损
+      bought_time: 买入时间
+      sold_time: 卖出时间
       price_notice: 买入价 / 卖出价 / 盈利
       date_notice: 买入日期 - 卖出日期
+      average_price: 平均交易成交价
+      average_gap: 平均交易间隔
   date:
     abbr_day_names:
     - 周日
