@@ -5,13 +5,11 @@ class FetchNftFlipRecordsJob < ApplicationJob
           "ikb-cachet-de-garantie", "bored-ape-yacht-club", "beanz-official", "colorglyphs",
           "nouns", "tom-sachs-rockets", "wolfgamelegacy", "cryptopunks", "meebits",
           "mutant-ape-yacht-club", "fvck-crystal", "10ktf", "cryptoadz", "gutter-cat-gang",
-          "mclarenmsolabgenesis", "otherdeed", "proof-moonbirds", "doodles",
-          "okay-bears", "mous-in-da-hous", "communi3-mad-scientists"]
+          "mclarenmsolabgenesis", "otherdeed", "proof-moonbirds", "doodles"]
 
   def perform
     NFTS.each do |slug|
-      n = Nft.find_by(slug: slug)
-      FetchNftFlipDataByNftJob.perform_later(n) if n.present?
+      FetchNftFlipDataByNftJob.perform_later(slug)
     end
   end
 end
