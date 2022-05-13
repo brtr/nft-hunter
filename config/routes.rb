@@ -18,8 +18,11 @@ Rails.application.routes.draw do
   resources :nft_snap_shots, only: [:index, :show]
 
   resources :nft_flip_records, only: :index do
-    get :fliper_detail, on: :collection
-    get :collection_detail, on: :collection
+    collection do
+      get :fliper_detail
+      get :collection_detail
+      get :check_new_records
+    end
   end
 
   post 'login', to: "users#login", as: :login
