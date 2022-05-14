@@ -1,7 +1,7 @@
 <div class="sidebar-enabled sidebar-end">
   <div class="container py-4 mb-2 mb-sm-0 pb-sm-5 row mx-xl-auto">
     <div class="col-5 mb-5">
-      <div class="row">
+      <div class="row" id="flip_records" data-last-id="<%= @records.maximum(:id) %>">
         <% @records.each do |record| %>
           <div class="col-12">
             <div class="card">

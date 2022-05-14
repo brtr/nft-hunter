@@ -37,7 +37,7 @@ class NftFlipRecordsController < ApplicationController
       SendNotificationToDiscordJob.perform_later((id..last).to_a)
     end
 
-    render json: {result: last - id}
+    render json: {result: last}
   end
 
   private

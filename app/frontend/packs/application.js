@@ -113,9 +113,13 @@ $(document).on('turbolinks:load', function() {
 
         setInterval(function () {
             $.get('/nft_flip_records/check_new_records', function(data){
-                if(data.result > 0 ){
-                    const notice = "<div class='alert alert-success alert-dismissible' role='alert'><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button><div class='alert-message'><strong>有" + data.result + "条新的Flip数据，请刷新!</strong></div></div>"
-                    $(".content").before(notice);
+                const last_id = data.result;
+                if(last_id > 0 ){
+                    const change = last_id - parseInt($("#flip_records").data("last-id"))
+                    if (change > 0) {
+                        const notice = "<div class='alert alert-success alert-dismissible' role='alert'><button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button><div class='alert-message'><strong>有" + change + "条新的Flip数据，请刷新!</strong></div></div>"
+                        $(".content").before(notice);
+                    }
                 }
             })
         }, 600000);
