@@ -42,12 +42,12 @@ class NftFlipRecord < ApplicationRecord
   end
 
   class << self
-    def get_flipa_winners(start_date: 30.days.ago, number: 10)
+    def get_flipa_winners(bought_start_date: 7.days.ago, sold_start_date: 7.days.ago, gap: 3*24*60*60, number: 10)
       sql = <<-SQL
         WITH fliper_counts AS (
-              select fliper_address, count(*) as total_count from nft_flip_records where sold_time > '#{start_date.to_date.to_s}' group by fliper_address
+              select fliper_address, count(*) as total_count from nft_flip_records where gap < #{gap} and bought_time > '#{bought_start_date.to_date.to_s}' and sold_time > '#{sold_start_date.to_date.to_s}' group by fliper_address
         ), win_fliper_counts AS (
-              select fliper_address, count(*) as win_count from nft_flip_records where roi > 0 and sold_time > '#{start_date.to_date.to_s}' group by fliper_address
+              select fliper_address, count(*) as win_count from nft_flip_records where gap < #{gap} and roi > 0 and bought_time > '#{bought_start_date.to_date.to_s}' and sold_time > '#{sold_start_date.to_date.to_s}' group by fliper_address
         )
         select win_fliper_counts.fliper_address, win_fliper_counts.win_count/total_count*100 as win_rate, win_fliper_counts.win_count, total_count
         from fliper_counts
@@ -60,8 +60,24 @@ class NftFlipRecord < ApplicationRecord
       NftFlipRecord.connection.select_all(sql)
     end
 
-    def get_best_flipas(fliper_address:, number: 5)
-      NftFlipRecord.where(fliper_address: fliper_address).order(revenue: :desc, gap: :asc).limit(number)
+    def get_best_flipas(fliper_address:, gap: 24*60*60, bought_start_date: 3.days.ago, slug: nil, number: 3)
+      res = NftFlipRecord.where(fliper_address: fliper_address).where("roi > 0").group(:slug).count
+      puts "购买的collection情况： #{res.to_s}"
+      results = if slug.present?
+        NftFlipRecord.where(fliper_address: fliper_address)
+          .where("gap < ?", gap)
+          .where(slug: slug)
+          .where("bought_time > ?", bought_start_date)
+          .order(revenue: :desc, gap: :asc).limit(number)
+      else
+        NftFlipRecord.where(fliper_address: fliper_address)
+          .where("gap < ?", gap)
+          .where("bought_time > ?", bought_start_date)
+          .order(revenue: :desc, gap: :asc).limit(number)
+      end
+      results.each do |_res|
+        puts "#{_res.bought_time.to_s}以$#{_res.bought_usd.to_i}买入， 在#{_res.sold_time.to_s}以#{_res.sold_usd.to_i}卖出（roi:#{_res.roi}/gap:#{(_res.gap/60.0/60).round(2)}h）   https://opensea.io/assets/#{_res.token_address}/#{_res.token_id}"
+      end;puts"------------------------"
     end
   end
 end
