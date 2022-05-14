@@ -34,7 +34,7 @@ class NftFlipRecordsController < ApplicationController
     last = NftFlipRecord.maximum(:id)
     if id < last
       $redis.set("last_nft_flip_record_id", last)
-      #SendNotificationToDiscordJob.perform_later((id..last).to_a)
+      SendNotificationToDiscordJob.perform_later((id..last).to_a)
     end
 
     render json: {result: last - id}
