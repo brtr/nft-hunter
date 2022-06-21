@@ -31,4 +31,17 @@ module ApplicationHelper
   def time_format(datetime)
     datetime.strftime("%Y-%m-%d %H:%M") rescue ''
   end
+
+  def error_msgs(error_code)
+    case error_code.to_i
+    when 1
+      "You don't have any NFTs."
+    when 2
+      "You need to login to see this page."
+    when 3
+      "Something went wrong, please try again later."
+    else
+      "You're not in the whitelist."
+    end
+  end
 end

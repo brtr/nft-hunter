@@ -8,10 +8,10 @@ class NftFlipRecord < ApplicationRecord
   end
 
   def revenue_eth
-    price - cost
+    sold - bought
   end
 
   def roi_eth
-    cost == 0 ? 0 : revenue_eth / cost
+    bought == 0 ? 0 : revenue_eth / bought
   end
 end
