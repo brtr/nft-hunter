@@ -8,8 +8,8 @@
               <h3 class="mb-0"><%= "#{address_format(record.fliper_address)} * #{record.slug} ##{record.token_id}" %></h3>
             </div>
             <div class="card-body">
-              <p class="card-text"><%= "Bought from #{address_format(record.from_address)} for #{decimal_format record.cost} #{record.bought_coin} ($#{decimal_format record.cost_usd}) at #{time_format record.bought_time}" %></p>
-              <p class="card-text"><%= "Sold to #{address_format(record.to_address)} for #{decimal_format record.price} #{record.sold_coin} ($#{decimal_format record.price_usd}) at #{time_format record.sold_time}" %></p>
+              <p class="card-text"><%= "Bought from #{address_format(record.from_address)} for #{decimal_format record.bought} #{record.bought_coin} ($#{decimal_format record.bought_usd}) at #{time_format record.bought_time}" %></p>
+              <p class="card-text"><%= "Sold to #{address_format(record.to_address)} for #{decimal_format record.sold} #{record.sold_coin} ($#{decimal_format record.sold_usd}) at #{time_format record.sold_time}" %></p>
               <p class="card-text"><%= "Gap: #{ActiveSupport::Duration.build(record.gap).inspect}" %></p>
               <p class="card-text">
                 <%= "Revenue: $#{decimal_format record.revenue} (#{decimal_format record.roi * 100}%)" %>
