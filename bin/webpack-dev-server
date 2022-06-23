@@ -14,5 +14,6 @@ require "webpacker/dev_server_runner"
 
 APP_ROOT = File.expand_path("..", __dir__)
 Dir.chdir(APP_ROOT) do
+  ARGV << '--max-old-space-size=500' unless ENV["RAILS_ENV"] == 'test'
   Webpacker::DevServerRunner.run(ARGV)
 end
