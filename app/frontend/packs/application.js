@@ -86,7 +86,7 @@ const login = function() {
 const checkNft = async function() {
     let error_code;
     const url = "/not_permitted?error_code="
-    if ($("#extensions").length > 0 || $("#myNfts").length > 0) {
+    if ($("#extensions").length > 0 || $("#myNfts").length > 0 || $(".qanda").length > 0) {
         $(".content").fadeIn(1000);
     } else {
         if (loginAddress) {

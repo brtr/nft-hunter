@@ -23,4 +23,5 @@ Rails.application.routes.draw do
   get '/users/:id/nfts', to: "users#nfts", as: :user_nfts
   get '/extensions', to: "home#extensions", as: :extensions
   get '/not_permitted', to: "home#not_permitted", as: :not_permitted
+  get '/q&a', to: "home#qanda", as: :qanda
 end
