@@ -10,4 +10,8 @@ class HomeController < ApplicationController
   def qanda
     @page_index = 6
   end
+
+  def mint
+    @page_index = 7
+  end
 end

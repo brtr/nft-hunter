@@ -20,6 +20,7 @@ const hunterPassAddress = NODE_ENV["HUNTER_PASS_ADDRESS"];
 const hunterPassAbi = NODE_ENV["HUNTER_PASS_ABI"];
 
 const provider = new ethers.providers.Web3Provider(web3.currentProvider);
+const signer = provider.getSigner();
 const hunterPassContract = new ethers.Contract(hunterPassAddress, hunterPassAbi, provider);
 const TargetChain = {id: NODE_ENV["CHAIN_ID"], name: NODE_ENV["CHAIN_NAME"]};
 
@@ -86,7 +87,7 @@ const login = function() {
 const checkNft = async function() {
     let error_code;
     const url = "/not_permitted?error_code="
-    if ($("#extensions").length > 0 || $("#myNfts").length > 0 || $(".qanda").length > 0) {
+    if ($("#extensions").length > 0 || $("#myNfts").length > 0 || $(".qanda").length > 0 || $(".mint").length > 0) {
         $(".content").fadeIn(1000);
     } else {
         if (loginAddress) {
@@ -103,6 +104,8 @@ const checkNft = async function() {
             });
         }
     }
+    const minted = await hunterPassContract.totalSupply();
+    $("#mintedQty").text(minted);
 }
 
 $(document).on('turbolinks:load', function() {
@@ -152,6 +155,24 @@ $(document).on('turbolinks:load', function() {
 
         $(".js-settings-toggle").on("click", function() {
             $(".js-settings").toggleClass("open");
+        })
+
+        $(".mintBtn").on("click", function() {
+            // $("#spinner").fadeIn();
+            // if (loginAddress) {
+            //     hunterPassContract.connect(signer).mint()
+            //     .then(async (tx) => {
+            //         console.log("tx: ", tx)
+            //         await tx.wait();
+            //         alert("Mint successfully!");
+            //         location.reload();
+            //     }).catch(err => {
+            //         console.log("error", err);
+            //         location.reload();
+            //     })
+            // } else {
+            //     checkMetamaskLogin();
+            // }
         })
     })
 
