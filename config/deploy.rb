@@ -43,6 +43,8 @@ namespace :deploy do
   task :compile_assets_locally do
     run_locally do
       with rails_env: fetch(:stage) do
+        execute "rm -rf ./public/assets/*"
+        execute "rm -rf ./public/packs/*"
         execute 'bundle exec rails assets:precompile'
       end
     end
