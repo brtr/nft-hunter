@@ -86,7 +86,7 @@ class Nft < ApplicationRecord
     last_history = nft_histories.order(event_date: :desc).first
     nft_transfers.each do |trade|
       price = trade.value.to_f / 10**18 rescue 0
-      next if price == 0 || price < last_history.eth_floor_price.to_f * 0.2
+      next if price == 0 || (last_history && price < last_history.eth_floor_price.to_f * 0.2)
       next if trade.from_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]]) || trade.to_address.in?([ENV["NFTX_ADDRESS"], ENV["SWAP_ADDRESS"]])
       nft_trades.where(token_id: trade.token_id, trade_time: trade.block_timestamp, seller: trade.from_address,
           buyer: trade.to_address, trade_price: price).first_or_create
